@@ -409,6 +409,37 @@
       <div id="feedList" style="padding-top:10px;"></div>
     </div>
 
+
+    <!-- STUDENTS (personal only) -->
+    <div id="tab-students" class="tab-page">
+      <div class="page-header">
+        <div class="page-header-row">
+          <div><div class="page-title">ALUNOS</div><div class="page-sub" id="studentsSubtitle">Meus alunos</div></div>
+          <button class="btn-add" onclick="openModal('linkStudentModal')"><i class="fa-solid fa-user-plus"></i> Vincular</button>
+        </div>
+      </div>
+      <!-- Busca rápida -->
+      <div style="padding:10px 12px 4px;">
+        <input id="studentsSearch" class="admin-search" style="margin:0;width:100%;" placeholder="Buscar aluno..." oninput="renderStudentsList()"/>
+      </div>
+      <div id="studentsList" style="padding-top:6px;"></div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div id="tab-messages" class="tab-page">
+      <div class="page-header">
+        <div class="page-header-row">
+          <div><div class="page-title">MENSAGENS</div><div class="page-sub" id="msgSubtitle">Caixa de entrada</div></div>
+          <button class="btn-add" id="btnNewMsg" style="display:none;" onclick="openNewMsgModal()"><i class="fa-solid fa-pen"></i> Nova</button>
+        </div>
+        <div class="filter-chips">
+          <div class="chip active" id="chipInbox" onclick="setMsgTab('inbox',this)">📥 Recebidas</div>
+          <div class="chip" id="chipSent" onclick="setMsgTab('sent',this)">📤 Enviadas</div>
+        </div>
+      </div>
+      <div id="messagesList" style="padding-top:8px;"></div>
+    </div>
+
     <!-- PROFILE -->
     <div id="tab-profile" class="tab-page">
       <div class="prof-top">
@@ -456,8 +487,9 @@
   <div class="bottom-nav">
     <button class="nav-item active" id="nav-home" onclick="switchTab('home')"><i class="fa-solid fa-house"></i><span>Home</span></button>
     <button class="nav-item" id="nav-workouts" onclick="switchTab('workouts')"><i class="fa-solid fa-dumbbell"></i><span>Treinos</span></button>
+    <button class="nav-item" id="nav-students" onclick="switchTab('students')" style="display:none;"><i class="fa-solid fa-users"></i><span>Alunos</span></button>
     <button class="nav-item" id="nav-frequency" onclick="switchTab('frequency')"><i class="fa-solid fa-calendar-check"></i><span>Freq.</span></button>
-    <button class="nav-item" id="nav-evolution" onclick="switchTab('evolution')"><i class="fa-solid fa-chart-line"></i><span>Evolução</span></button>
+    <button class="nav-item" id="nav-messages" onclick="switchTab('messages')" style="position:relative;"><i class="fa-solid fa-envelope"></i><span id="navMsgTxt">Msgs</span><span id="msgBadge" style="display:none;position:absolute;top:5px;right:8px;background:var(--red);color:white;font-size:9px;font-weight:700;font-family:var(--fh);min-width:15px;height:15px;border-radius:8px;align-items:center;justify-content:center;padding:0 3px;"></span></button>
     <button class="nav-item" id="nav-feed" onclick="switchTab('feed')"><i class="fa-solid fa-bullhorn"></i><span>Feed</span></button>
     <button class="nav-item" id="nav-profile" onclick="switchTab('profile')"><i class="fa-solid fa-user"></i><span>Perfil</span></button>
   </div>
@@ -696,6 +728,93 @@
   </div>
 </div>
 
+
+<!-- Link Student Modal -->
+<div id="linkStudentModal" class="modal-ov">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔗 VINCULAR ALUNO</div>
+    <div style="font-size:13px;color:var(--gray);margin-bottom:14px;line-height:1.6;">
+      Informe o e-mail do aluno cadastrado no FitZone. Ele aparecerá na sua lista e poderá receber treinos.
+    </div>
+    <div style="display:flex;flex-direction:column;gap:11px;">
+      <div class="form-group"><label class="form-label">E-mail do Aluno</label>
+        <input type="email" id="linkStudentEmail" class="form-input" placeholder="email@aluno.com"/>
+      </div>
+      <div id="linkStudentResult" style="display:none;background:var(--dark3);border:1px solid var(--yellow);padding:12px;border-left:3px solid var(--yellow);">
+        <div style="font-family:var(--fh);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--yellow);margin-bottom:6px;">ALUNO ENCONTRADO</div>
+        <div id="linkStudentInfo" style="font-size:14px;font-weight:600;"></div>
+        <div id="linkStudentMeta" style="font-size:12px;color:var(--gray);margin-top:3px;"></div>
+      </div>
+      <div id="linkStudentNotFound" style="display:none;background:rgba(255,59,48,.07);border:1px solid rgba(255,59,48,.25);padding:10px;font-size:13px;color:var(--red);">
+        ❌ Aluno não encontrado. Verifique o e-mail.
+      </div>
+      <button class="btn-outline" onclick="searchStudentByEmail()">🔍 BUSCAR</button>
+      <button class="btn-primary" id="btnConfirmLink" style="display:none;" onclick="confirmLinkStudent()">✅ VINCULAR ALUNO</button>
+      <button class="btn-outline" onclick="closeModal('linkStudentModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Assign Workout to Student Modal -->
+<div id="assignWorkoutModal" class="modal-ov">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🏋️ ATRIBUIR TREINO</div>
+    <input type="hidden" id="assignStudentUid"/>
+    <div id="assignStudentName" style="font-family:var(--fh);font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--yellow);margin-bottom:14px;"></div>
+    <div id="assignWorkoutList" style="display:flex;flex-direction:column;gap:8px;max-height:55vh;overflow-y:auto;margin-bottom:12px;"></div>
+    <button class="btn-outline" onclick="closeModal('assignWorkoutModal')">Fechar</button>
+  </div>
+</div>
+
+<!-- Send Message to Student Modal -->
+<div id="sendMsgStudentModal" class="modal-ov">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💬 MENSAGEM PARA ALUNO</div>
+    <input type="hidden" id="msgToUid"/>
+    <div id="msgToName" style="font-family:var(--fh);font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--yellow);margin-bottom:14px;"></div>
+    <div style="display:flex;flex-direction:column;gap:11px;">
+      <div class="form-group"><label class="form-label">Assunto</label>
+        <input type="text" id="msgSubjectIndividual" class="form-input" placeholder="Ex: Sobre seu treino de hoje"/></div>
+      <div class="form-group"><label class="form-label">Mensagem</label>
+        <textarea id="msgBodyIndividual" class="form-textarea" rows="5" placeholder="Escreva sua mensagem..."></textarea></div>
+      <button class="btn-primary" onclick="submitMsgIndividual()">📤 ENVIAR</button>
+      <button class="btn-outline" onclick="closeModal('sendMsgStudentModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Send Message to ALL students Modal -->
+<div id="sendMsgAllModal" class="modal-ov">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📢 MENSAGEM GERAL</div>
+    <div style="font-size:13px;color:var(--gray);margin-bottom:14px;line-height:1.5;">Será enviada para <strong id="msgAllCount" style="color:var(--yellow);">todos</strong> seus alunos vinculados.</div>
+    <div style="display:flex;flex-direction:column;gap:11px;">
+      <div class="form-group"><label class="form-label">Assunto</label>
+        <input type="text" id="msgSubjectAll" class="form-input" placeholder="Ex: Mudança de horário"/></div>
+      <div class="form-group"><label class="form-label">Mensagem</label>
+        <textarea id="msgBodyAll" class="form-textarea" rows="5" placeholder="Escreva o aviso para todos os alunos..."></textarea></div>
+      <button class="btn-primary" onclick="submitMsgAll()">📤 ENVIAR PARA TODOS</button>
+      <button class="btn-outline" onclick="closeModal('sendMsgAllModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Read Message Modal -->
+<div id="readMsgModal" class="modal-ov">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div id="readMsgFrom" style="font-family:var(--fh);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--yellow);margin-bottom:4px;"></div>
+    <div id="readMsgSubject" style="font-family:var(--fd);font-size:22px;letter-spacing:1px;margin-bottom:6px;"></div>
+    <div id="readMsgTime" style="font-size:11px;color:var(--gray);margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);"></div>
+    <div id="readMsgBody" style="font-size:14px;line-height:1.75;color:var(--text);white-space:pre-wrap;min-height:80px;margin-bottom:18px;"></div>
+    <button class="btn-outline" onclick="closeModal('readMsgModal')">Fechar</button>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div id="toast"></div>
 
@@ -704,18 +823,22 @@ import {
   auth, onAuthStateChanged, loginUser, registerUser, logoutUser, resetPassword,
   getCurrentUser, updateUserProfile,
   getMyWorkouts, getWorkoutsCreatedBy, createWorkout, updateWorkout, deleteWorkout,
+  assignWorkout, unassignWorkout,
   logLoad, getAllLoads, deleteLoad,
   checkIn, getCheckins,
   getAssessments, addAssessment, deleteAssessment,
   getDietPlan, saveDietPlan,
   getAnnouncements, createAnnouncement, toggleAnnounceLike,
   getAllUsers, toggleUserActive, renewAccess, getAdminStats,
+  getStudentsByPersonal, findUserByEmail, linkStudentToPersonal, unlinkStudent,
+  sendMessageToStudent, sendMessageToAll, getMyMessages, getSentMessages, markMessageRead, countUnreadMessages,
   deleteItem, updateItem, Timestamp
 } from './services/firebase.js';
 
 let CU = null; // currentUser
 let allWorkouts = [], allLoads = [], allAnnouncements = [];
 let allAdminUsers = [], curAdminTab = 'active';
+let myStudents = [], foundStudent = null, curMsgTab = 'inbox', allMessages = [], allSentMessages = [];
 
 // ===== UTILS =====
 function show(id) {
@@ -832,11 +955,14 @@ function initApp() {
   if (isProf()) {
     document.getElementById('btnAddWorkout').style.display = 'flex';
     document.getElementById('btnAddAnnounce').style.display = 'flex';
+    document.getElementById('nav-students').style.display = 'flex';
+    document.getElementById('btnNewMsg').style.display = 'flex';
   }
   loadHomeStats();
   loadHomeWorkouts();
   loadHomeAnnouncements();
   renderProfile();
+  checkUnreadMessages();
 }
 
 function switchTab(tab) {
@@ -850,6 +976,8 @@ function switchTab(tab) {
   if (tab === 'evolution' && !allLoads.length) loadEvolution();
   if (tab === 'feed' && !allAnnouncements.length) loadFeed();
   if (tab === 'profile') renderProfileTab();
+  if (tab === 'students') loadStudents();
+  if (tab === 'messages') loadMessages();
 }
 window.switchTab = switchTab;
 
@@ -1430,6 +1558,287 @@ window.blockUser = async function(uid,isActive,name) {
   if (!confirm((isActive?'Bloquear ':'Ativar ')+name+'?')) return;
   try { await toggleUserActive(uid,!isActive); toast('✅ OK!'); loadAdmin(); }
   catch(e) { toast('Erro'); }
+}
+
+
+
+// ===== STUDENTS (personal) =====
+async function loadStudents() {
+  const c = document.getElementById('studentsList');
+  c.innerHTML = '<div class="loading"><div class="loading-spin"></div></div>';
+  try {
+    myStudents = await getStudentsByPersonal(CU.uid);
+    document.getElementById('studentsSubtitle').textContent = myStudents.length + ' alunos vinculados';
+    renderStudentsList();
+  } catch(e) { c.innerHTML = '<div style="padding:20px;color:var(--red);">' + e.message + '</div>'; }
+}
+
+window.renderStudentsList = function() {
+  const c = document.getElementById('studentsList');
+  const search = (document.getElementById('studentsSearch')?.value || '').toLowerCase();
+  const list = search ? myStudents.filter(s => s.name?.toLowerCase().includes(search) || s.email?.toLowerCase().includes(search)) : myStudents;
+  if (!list.length) {
+    c.innerHTML = '<div class="empty-state"><span class="ei">👥</span><h3>SEM ALUNOS</h3><p>Clique em "Vincular" para adicionar um aluno pelo e-mail.</p></div>';
+    return;
+  }
+  c.innerHTML = list.map(s => {
+    const exp = s.expirationDate?.toDate?.();
+    const days = exp ? Math.floor((exp - Date.now()) / 86400000) : 0;
+    const expColor = days < 0 ? 'var(--red)' : days <= 7 ? '#FF9500' : 'var(--green)';
+    return '<div class="user-card" style="border-left:2px solid var(--yellow);">' +
+      '<div class="user-card-top">' +
+        '<div class="user-avatar">' + (s.name||'?')[0].toUpperCase() + '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="user-name">' + (s.name||'—') + '</div>' +
+          '<div class="user-email">' + (s.email||'') + ' · ' + (s.goal||'') + ' · ' + (s.level||'') + '</div>' +
+          '<div class="user-email">💪 ' + (s.totalWorkouts||0) + ' treinos · ' + (s.city||'') + '</div>' +
+        '</div>' +
+        '<div style="font-family:var(--fd);font-size:14px;color:' + expColor + ';">' + (days < 0 ? 'Expirado' : days + 'd') + '</div>' +
+      '</div>' +
+      '<div class="user-card-footer">' +
+        '<button class="user-btn" style="color:var(--yellow);" onclick="openAssignWorkout(" + s.uid + "," + (s.name||").replace(/'/g," + '')">"🏋️ Treinos</button>" +
+        '<button class="user-btn" style="color:var(--blue);" onclick="openMsgStudent(" + s.uid + "," + (s.name||").replace(/"/g,") + ")">💬 Mensagem</button>' +
+        '<button class="user-btn" style="color:var(--red);" onclick="confirmUnlink(" + s.uid + "," + (s.name||").replace(/"/g,") + ")">🔗 Desvincular</button>' +
+      '</div>' +
+    '</div>';
+  }).join('') +
+  // Botão mensagem geral no final
+  '<div style="padding:12px;">' +
+    '<button class="btn-outline" style="color:var(--yellow);border-color:rgba(255,214,0,.3);" onclick="openMsgAll()">📢 ENVIAR MENSAGEM PARA TODOS OS ALUNOS</button>' +
+  '</div>';
+}
+
+// ── Link student by email ──
+window.searchStudentByEmail = async function() {
+  const email = document.getElementById('linkStudentEmail').value.trim();
+  if (!email) { toast('Informe o e-mail'); return; }
+  document.getElementById('linkStudentResult').style.display = 'none';
+  document.getElementById('linkStudentNotFound').style.display = 'none';
+  document.getElementById('btnConfirmLink').style.display = 'none';
+  foundStudent = null;
+  try {
+    const u = await findUserByEmail(email);
+    if (!u) { document.getElementById('linkStudentNotFound').style.display = 'block'; return; }
+    foundStudent = u;
+    document.getElementById('linkStudentInfo').textContent = u.name + ' (' + u.email + ')';
+    document.getElementById('linkStudentMeta').textContent = (u.city||'') + ' · ' + (u.goal||'') + ' · ' + (u.level||'');
+    document.getElementById('linkStudentResult').style.display = 'block';
+    document.getElementById('btnConfirmLink').style.display = 'block';
+  } catch(e) { toast('Erro: ' + e.message); }
+}
+
+window.confirmLinkStudent = async function() {
+  if (!foundStudent) return;
+  try {
+    await linkStudentToPersonal(foundStudent.uid, CU.uid, CU.name);
+    closeModal('linkStudentModal');
+    document.getElementById('linkStudentEmail').value = '';
+    document.getElementById('linkStudentResult').style.display = 'none';
+    document.getElementById('btnConfirmLink').style.display = 'none';
+    foundStudent = null;
+    toast('✅ Aluno vinculado com sucesso!');
+    loadStudents();
+  } catch(e) { toast('Erro: ' + e.message); }
+}
+
+window.confirmUnlink = async function(uid, name) {
+  if (!confirm('Desvincular ' + name + '? Ele perderá acesso aos seus treinos.')) return;
+  try {
+    await unlinkStudent(uid);
+    toast('✅ Aluno desvinculado');
+    loadStudents();
+  } catch(e) { toast('Erro'); }
+}
+
+// ── Assign workout to student ──
+window.openAssignWorkout = async function(uid, name) {
+  document.getElementById('assignStudentUid').value = uid;
+  document.getElementById('assignStudentName').textContent = '👤 ' + name;
+  const c = document.getElementById('assignWorkoutList');
+  c.innerHTML = '<div class="loading"><div class="loading-spin"></div></div>';
+  openModal('assignWorkoutModal');
+  try {
+    const wks = await getWorkoutsCreatedBy(CU.uid);
+    if (!wks.length) { c.innerHTML = '<div style="font-size:13px;color:var(--gray);padding:10px;">Nenhum treino criado ainda.</div>'; return; }
+    c.innerHTML = wks.map(w => {
+      const assigned = w.assignedTo?.includes(uid);
+      return '<div style="background:var(--dark2);border:1px solid var(--border);border-left:3px solid ' + (assigned ? 'var(--green)' : 'var(--border)') + ';padding:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;">' +
+        '<div>' +
+          '<div style="font-family:var(--fh);font-size:14px;font-weight:800;text-transform:uppercase;">' + (w.letter||'') + ' · ' + (w.name||'') + '</div>' +
+          '<div style="font-size:11px;color:var(--gray);">' + (w.focus||'') + ' · ' + (w.exercises?.length||0) + ' exercícios</div>' +
+        '</div>' +
+        (assigned
+          ? '<button class="btn-sm-red" onclick="doUnassign(' + w.id + ',' + uid + ')">Remover</button>'
+          : '<button class="btn-sm" onclick="doAssign(' + w.id + ',' + uid + ',' + name.replace(/'/g,'') + ')">Atribuir</button>') +
+      '</div>';
+    }).join('');
+  } catch(e) { c.innerHTML = '<div style="color:var(--red);font-size:13px;">' + e.message + '</div>'; }
+}
+
+window.doAssign = async function(wkId, uid, name) {
+  try {
+    await assignWorkout(wkId, uid);
+    toast('✅ Treino atribuído para ' + name + '!');
+    openAssignWorkout(uid, name); // refresh list
+  } catch(e) { toast('Erro'); }
+}
+
+window.doUnassign = async function(wkId, uid) {
+  try {
+    await unassignWorkout(wkId, uid);
+    toast('✅ Treino removido');
+    const name = document.getElementById('assignStudentName').textContent.replace('👤 ','');
+    openAssignWorkout(uid, name);
+  } catch(e) { toast('Erro'); }
+}
+
+// ===== MESSAGES =====
+async function checkUnreadMessages() {
+  if (!CU) return;
+  try {
+    const count = await countUnreadMessages(CU.uid);
+    const badge = document.getElementById('msgBadge');
+    if (count > 0) {
+      badge.textContent = count > 9 ? '9+' : count;
+      badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  } catch(e) {}
+}
+
+async function loadMessages() {
+  if (isProf()) document.getElementById('btnNewMsg').style.display = 'flex';
+  setMsgTab(curMsgTab, document.getElementById(curMsgTab === 'inbox' ? 'chipInbox' : 'chipSent'));
+}
+
+window.setMsgTab = function(tab, el) {
+  curMsgTab = tab;
+  document.querySelectorAll('#tab-messages .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  if (tab === 'inbox') loadInbox();
+  else loadSent();
+}
+
+async function loadInbox() {
+  const c = document.getElementById('messagesList');
+  c.innerHTML = '<div class="loading"><div class="loading-spin"></div></div>';
+  try {
+    allMessages = await getMyMessages(CU.uid);
+    if (!allMessages.length) {
+      c.innerHTML = '<div class="empty-state"><span class="ei">📭</span><h3>SEM MENSAGENS</h3><p>Você não recebeu nenhuma mensagem ainda.</p></div>';
+      return;
+    }
+    c.innerHTML = allMessages.map(m => renderMsgCard(m, false)).join('');
+    checkUnreadMessages();
+  } catch(e) { c.innerHTML = '<div style="padding:20px;color:var(--red);">' + e.message + '</div>'; }
+}
+
+async function loadSent() {
+  const c = document.getElementById('messagesList');
+  c.innerHTML = '<div class="loading"><div class="loading-spin"></div></div>';
+  try {
+    allSentMessages = await getSentMessages(CU.uid);
+    // deduplicate geral messages (show once per send batch)
+    const seen = new Set(), unique = [];
+    allSentMessages.forEach(m => {
+      const key = m.subject + '_' + (m.createdAt?.seconds||0);
+      if (m.type === 'geral') {
+        if (!seen.has(key)) { seen.add(key); unique.push({...m, allCount: allSentMessages.filter(x => x.subject===m.subject && x.createdAt?.seconds===m.createdAt?.seconds).length}); }
+      } else { unique.push(m); }
+    });
+    if (!unique.length) {
+      c.innerHTML = '<div class="empty-state"><span class="ei">📤</span><h3>SEM ENVIADAS</h3><p>Você não enviou nenhuma mensagem ainda.</p></div>';
+      return;
+    }
+    c.innerHTML = unique.map(m => renderMsgCard(m, true)).join('');
+  } catch(e) { c.innerHTML = '<div style="padding:20px;color:var(--red);">' + e.message + '</div>'; }
+}
+
+function renderMsgCard(m, isSent) {
+  const isUnread = !m.read && !isSent;
+  const timeStr = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+  return '<div onclick="openReadMsg(' + m.id + ',' + isSent + ')" style="background:' + (isUnread ? 'var(--dark3)' : 'var(--dark2)') + ';border:1px solid ' + (isUnread ? 'rgba(255,214,0,.25)' : 'var(--border)') + ';border-left:3px solid ' + (isUnread ? 'var(--yellow)' : 'var(--border)') + ';margin:0 12px 8px;padding:13px;cursor:pointer;transition:all .15s;">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">' +
+      '<div style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:' + (isUnread ? 'var(--yellow)' : 'var(--gray)') + ';">' +
+        (isSent ? ('→ ' + (m.type === 'geral' ? 'GERAL (' + (m.allCount||1) + ' alunos)' : m.toName||'')) : ('← ' + (m.fromName||'FitZone'))) +
+      '</div>' +
+      '<div style="font-size:10px;color:var(--gray2);">' + timeStr + '</div>' +
+    '</div>' +
+    '<div style="font-weight:' + (isUnread ? '700' : '400') + ';font-size:14px;margin-bottom:4px;">' + (m.subject||'Sem assunto') + '</div>' +
+    '<div style="font-size:12px;color:var(--gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (m.message||'').substring(0,80) + '</div>' +
+  '</div>';
+}
+
+window.openReadMsg = async function(id, isSent) {
+  let msg;
+  if (isSent) msg = allSentMessages.find(m => m.id === id);
+  else msg = allMessages.find(m => m.id === id);
+  if (!msg) return;
+  if (!msg.read && !isSent) {
+    await markMessageRead(id);
+    msg.read = true;
+    checkUnreadMessages();
+    loadInbox();
+  }
+  const timeStr = msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleString('pt-BR') : '';
+  document.getElementById('readMsgFrom').textContent = isSent
+    ? ('Para: ' + (msg.type === 'geral' ? 'Todos os alunos' : msg.toName))
+    : ('De: ' + (msg.fromName || 'FitZone'));
+  document.getElementById('readMsgSubject').textContent = msg.subject || 'Sem assunto';
+  document.getElementById('readMsgTime').textContent = timeStr;
+  document.getElementById('readMsgBody').textContent = msg.message || '';
+  openModal('readMsgModal');
+}
+
+// ── Open new msg for specific student ──
+window.openMsgStudent = function(uid, name) {
+  document.getElementById('msgToUid').value = uid;
+  document.getElementById('msgToName').textContent = '💬 Para: ' + name;
+  document.getElementById('msgSubjectIndividual').value = '';
+  document.getElementById('msgBodyIndividual').value = '';
+  openModal('sendMsgStudentModal');
+}
+
+window.submitMsgIndividual = async function() {
+  const toUid = document.getElementById('msgToUid').value;
+  const toName = document.getElementById('msgToName').textContent.replace('💬 Para: ','');
+  const subject = document.getElementById('msgSubjectIndividual').value.trim();
+  const message = document.getElementById('msgBodyIndividual').value.trim();
+  if (!message) { toast('Escreva a mensagem'); return; }
+  try {
+    await sendMessageToStudent({ toUid, toName, subject, message }, CU.uid, CU.name);
+    closeModal('sendMsgStudentModal');
+    toast('✅ Mensagem enviada para ' + toName + '!');
+  } catch(e) { toast('Erro: ' + e.message); }
+}
+
+// ── Open new msg for personal composing ──
+window.openNewMsgModal = async function() {
+  // if has students, ask: individual or all
+  if (!myStudents.length) { myStudents = await getStudentsByPersonal(CU.uid); }
+  if (!myStudents.length) { toast('Vincule alunos primeiro!'); return; }
+  // open a quick choice modal — reuse sendMsgAllModal
+  openMsgAll();
+}
+
+window.openMsgAll = function() {
+  document.getElementById('msgAllCount').textContent = myStudents.length + (myStudents.length === 1 ? ' aluno' : ' alunos');
+  document.getElementById('msgSubjectAll').value = '';
+  document.getElementById('msgBodyAll').value = '';
+  openModal('sendMsgAllModal');
+}
+
+window.submitMsgAll = async function() {
+  const subject = document.getElementById('msgSubjectAll').value.trim();
+  const message = document.getElementById('msgBodyAll').value.trim();
+  if (!message) { toast('Escreva a mensagem'); return; }
+  if (!myStudents.length) { toast('Nenhum aluno vinculado'); return; }
+  try {
+    await sendMessageToAll({ subject, message }, CU.uid, CU.name, myStudents);
+    closeModal('sendMsgAllModal');
+    toast('✅ Mensagem enviada para ' + myStudents.length + ' alunos!');
+  } catch(e) { toast('Erro: ' + e.message); }
 }
 
 // INIT default dates

@@ -1,4 +1,10 @@
 // src/services/firebase.js — FitZone
+// ⚠️ PROJETO FIREBASE SEPARADO — crie em console.firebase.google.com
+// 1. Crie projeto "fitzone" (ou nome de sua preferência)
+// 2. Ative Authentication → E-mail/senha
+// 3. Crie Firestore Database → Modo de teste
+// 4. Cole o firebaseConfig abaixo
+
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
 import {
   getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
@@ -10,7 +16,7 @@ import {
   increment, arrayUnion, arrayRemove
 } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
-// 🔑 Configurações extraídas do seu console Firebase
+// 🔑 Configurações do seu projeto Firebase "fitzone"
 const firebaseConfig = {
   apiKey: "AIzaSyA-9Htb5wI1k3NXyK12T8ceMWtvF-NuoSs",
   authDomain: "fitzone-8719f.firebaseapp.com",
@@ -19,7 +25,6 @@ const firebaseConfig = {
   messagingSenderId: "264831726073",
   appId: "1:264831726073:web:e7a20ada0dd645d1e5cd28"
 };
-
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
@@ -31,11 +36,11 @@ export async function registerUser(data) {
   const cred = await createUserWithEmailAndPassword(auth, email, password);
   const uid = cred.user.uid;
   const now = new Date();
-  const expiry = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 dias de teste
+  const expiry = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
   const user = {
     uid, name, email,
     phone: phone || '', city: city || '', state: state || '',
-    role: role || 'aluno',       
+    role: role || 'aluno',       // 'aluno' | 'personal' | 'admin'
     goal: goal || 'Hipertrofia',
     level: level || 'Iniciante',
     registrationDate: Timestamp.fromDate(now),
@@ -224,8 +229,92 @@ export async function getStudentsByPersonal(personalUid) {
     .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 }
 
+export async function findUserByEmail(email) {
+  const q = query(collection(db, 'fz_users'), where('email', '==', email.toLowerCase().trim()), limit(1));
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+  return snap.docs[0].data();
+}
+
 export async function linkStudentToPersonal(studentUid, personalUid, personalName) {
   await updateDoc(doc(db, 'fz_users', studentUid), { personalUid, personalName });
+  // notifica o aluno
+  await addDoc(collection(db, 'fz_notifications'), {
+    userId: studentUid,
+    title: '🔗 Personal vinculado!',
+    message: personalName + ' é agora seu personal trainer no FitZone.',
+    read: false, createdAt: serverTimestamp()
+  });
+}
+
+export async function unlinkStudent(studentUid) {
+  await updateDoc(doc(db, 'fz_users', studentUid), { personalUid: '', personalName: '' });
+}
+
+// ===================== MENSAGENS =====================
+// Mensagem individual (personal → aluno específico)
+export async function sendMessageToStudent(data, fromUid, fromName) {
+  const { toUid, toName, subject, message } = data;
+  const ref = await addDoc(collection(db, 'fz_messages'), {
+    fromUid, fromName, toUid, toName,
+    subject: subject || 'Mensagem do seu Personal',
+    message, type: 'individual',
+    read: false, createdAt: serverTimestamp()
+  });
+  // também cria notificação para o aluno
+  await addDoc(collection(db, 'fz_notifications'), {
+    userId: toUid,
+    title: '💬 ' + fromName + ' enviou uma mensagem',
+    message: subject || 'Mensagem do seu Personal',
+    read: false, createdAt: serverTimestamp()
+  });
+  return ref.id;
+}
+
+// Mensagem geral (personal → todos seus alunos)
+export async function sendMessageToAll(data, fromUid, fromName, students) {
+  const { subject, message } = data;
+  const batch = students.map(s =>
+    addDoc(collection(db, 'fz_messages'), {
+      fromUid, fromName, toUid: s.uid, toName: s.name,
+      subject: subject || 'Aviso do seu Personal',
+      message, type: 'geral',
+      read: false, createdAt: serverTimestamp()
+    })
+  );
+  const notifs = students.map(s =>
+    addDoc(collection(db, 'fz_notifications'), {
+      userId: s.uid,
+      title: '📢 ' + fromName + ': ' + (subject || 'Aviso geral'),
+      message: message.substring(0, 80),
+      read: false, createdAt: serverTimestamp()
+    })
+  );
+  await Promise.all([...batch, ...notifs]);
+}
+
+export async function getMyMessages(userId) {
+  const q = query(collection(db, 'fz_messages'), where('toUid', '==', userId), limit(50));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+}
+
+export async function getSentMessages(fromUid) {
+  const q = query(collection(db, 'fz_messages'), where('fromUid', '==', fromUid), limit(50));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+}
+
+export async function markMessageRead(id) {
+  await updateDoc(doc(db, 'fz_messages', id), { read: true });
+}
+
+export async function countUnreadMessages(userId) {
+  const q = query(collection(db, 'fz_messages'), where('toUid', '==', userId), where('read', '==', false));
+  const snap = await getDocs(q);
+  return snap.size;
 }
 
 // ===================== ADMIN =====================
