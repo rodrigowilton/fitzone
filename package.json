@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "FitZone - Academia e Treinos",
   "scripts": {
-    "start": "npx serve src -p 3000",
+    "start": "npx serve src -p 3008",
+    "dev": "serve -s . -p 3008",
     "build": "npx copyfiles -u 1 \"src/**/*\" dist",
     "cap:sync": "npx cap sync android",
     "cap:open": "npx cap open android"
