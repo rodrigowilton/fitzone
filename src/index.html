@@ -1581,6 +1581,9 @@ window.renderStudentsList = function() {
     c.innerHTML = '<div class="empty-state"><span class="ei">👥</span><h3>SEM ALUNOS</h3><p>Clique em "Vincular" para adicionar um aluno pelo e-mail.</p></div>';
     return;
   }
+  // Store students in a map for data-attribute access
+  window._studentsMap = {};
+  list.forEach(s => { window._studentsMap[s.uid] = s; });
   c.innerHTML = list.map(s => {
     const exp = s.expirationDate?.toDate?.();
     const days = exp ? Math.floor((exp - Date.now()) / 86400000) : 0;
@@ -1596,9 +1599,9 @@ window.renderStudentsList = function() {
         '<div style="font-family:var(--fd);font-size:14px;color:' + expColor + ';">' + (days < 0 ? 'Expirado' : days + 'd') + '</div>' +
       '</div>' +
       '<div class="user-card-footer">' +
-        '<button class="user-btn" style="color:var(--yellow);" onclick="openAssignWorkout(" + s.uid + "," + (s.name||").replace(/'/g," + '')">"🏋️ Treinos</button>" +
-        '<button class="user-btn" style="color:var(--blue);" onclick="openMsgStudent(" + s.uid + "," + (s.name||").replace(/"/g,") + ")">💬 Mensagem</button>' +
-        '<button class="user-btn" style="color:var(--red);" onclick="confirmUnlink(" + s.uid + "," + (s.name||").replace(/"/g,") + ")">🔗 Desvincular</button>' +
+        '<button class="user-btn" style="color:var(--yellow);" data-uid="' + s.uid + '" data-name="' + (s.name||'').replace(/"/g,'') + '" onclick="openAssignWorkout(this.dataset.uid,this.dataset.name)">🏋️ Treinos</button>' +
+        '<button class="user-btn" style="color:var(--blue);" data-uid="' + s.uid + '" data-name="' + (s.name||'').replace(/"/g,'') + '" onclick="openMsgStudent(this.dataset.uid,this.dataset.name)">💬 Mensagem</button>' +
+        '<button class="user-btn" style="color:var(--red);" data-uid="' + s.uid + '" data-name="' + (s.name||'').replace(/"/g,'') + '" onclick="confirmUnlink(this.dataset.uid,this.dataset.name)">🔗 Desvincular</button>' +
       '</div>' +
     '</div>';
   }).join('') +
@@ -1668,8 +1671,8 @@ window.openAssignWorkout = async function(uid, name) {
           '<div style="font-size:11px;color:var(--gray);">' + (w.focus||'') + ' · ' + (w.exercises?.length||0) + ' exercícios</div>' +
         '</div>' +
         (assigned
-          ? '<button class="btn-sm-red" onclick="doUnassign(' + w.id + ',' + uid + ')">Remover</button>'
-          : '<button class="btn-sm" onclick="doAssign(' + w.id + ',' + uid + ',' + name.replace(/'/g,'') + ')">Atribuir</button>') +
+          ? '<button class="btn-sm-red" data-wid="' + w.id + '" data-uid="' + uid + '" onclick="doUnassign(this.dataset.wid,this.dataset.uid)">Remover</button>'
+          : '<button class="btn-sm" data-wid="' + w.id + '" data-uid="' + uid + '" data-name="' + name.replace(/"/g,'') + '" onclick="doAssign(this.dataset.wid,this.dataset.uid,this.dataset.name)">Atribuir</button>') +
       '</div>';
     }).join('');
   } catch(e) { c.innerHTML = '<div style="color:var(--red);font-size:13px;">' + e.message + '</div>'; }
@@ -1729,7 +1732,8 @@ async function loadInbox() {
       c.innerHTML = '<div class="empty-state"><span class="ei">📭</span><h3>SEM MENSAGENS</h3><p>Você não recebeu nenhuma mensagem ainda.</p></div>';
       return;
     }
-    c.innerHTML = allMessages.map(m => renderMsgCard(m, false)).join('');
+    c.innerHTML = '';
+    allMessages.forEach(m => c.appendChild(renderMsgCard(m, false)));
     checkUnreadMessages();
   } catch(e) { c.innerHTML = '<div style="padding:20px;color:var(--red);">' + e.message + '</div>'; }
 }
@@ -1751,23 +1755,38 @@ async function loadSent() {
       c.innerHTML = '<div class="empty-state"><span class="ei">📤</span><h3>SEM ENVIADAS</h3><p>Você não enviou nenhuma mensagem ainda.</p></div>';
       return;
     }
-    c.innerHTML = unique.map(m => renderMsgCard(m, true)).join('');
+    c.innerHTML = '';
+    unique.forEach(m => c.appendChild(renderMsgCard(m, true)));
   } catch(e) { c.innerHTML = '<div style="padding:20px;color:var(--red);">' + e.message + '</div>'; }
 }
 
 function renderMsgCard(m, isSent) {
   const isUnread = !m.read && !isSent;
-  const timeStr = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
-  return '<div onclick="openReadMsg(' + m.id + ',' + isSent + ')" style="background:' + (isUnread ? 'var(--dark3)' : 'var(--dark2)') + ';border:1px solid ' + (isUnread ? 'rgba(255,214,0,.25)' : 'var(--border)') + ';border-left:3px solid ' + (isUnread ? 'var(--yellow)' : 'var(--border)') + ';margin:0 12px 8px;padding:13px;cursor:pointer;transition:all .15s;">' +
+  const timeStr = m.createdAt && m.createdAt.toDate
+    ? m.createdAt.toDate().toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})
+    : '';
+  const bgColor    = isUnread ? 'var(--dark3)' : 'var(--dark2)';
+  const borderClr  = isUnread ? 'rgba(255,214,0,.25)' : 'var(--border)';
+  const accentClr  = isUnread ? 'var(--yellow)' : 'var(--border)';
+  const nameClr    = isUnread ? 'var(--yellow)' : 'var(--gray)';
+  const fontWeight = isUnread ? '700' : '400';
+  const fromLabel  = isSent
+    ? ('Para: ' + (m.type === 'geral' ? 'GERAL (' + (m.allCount || 1) + ' alunos)' : (m.toName || '')))
+    : ('De: ' + (m.fromName || 'FitZone'));
+  const preview  = (m.message || '').substring(0, 80);
+  const subject  = (m.subject || 'Sem assunto');
+  const mid      = m.id;
+  const div = document.createElement('div');
+  div.style.cssText = 'background:' + bgColor + ';border:1px solid ' + borderClr + ';border-left:3px solid ' + accentClr + ';margin:0 12px 8px;padding:13px;cursor:pointer;transition:all .15s;';
+  div.innerHTML =
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">' +
-      '<div style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:' + (isUnread ? 'var(--yellow)' : 'var(--gray)') + ';">' +
-        (isSent ? ('→ ' + (m.type === 'geral' ? 'GERAL (' + (m.allCount||1) + ' alunos)' : m.toName||'')) : ('← ' + (m.fromName||'FitZone'))) +
-      '</div>' +
+      '<div style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:' + nameClr + ';">' + fromLabel + '</div>' +
       '<div style="font-size:10px;color:var(--gray2);">' + timeStr + '</div>' +
     '</div>' +
-    '<div style="font-weight:' + (isUnread ? '700' : '400') + ';font-size:14px;margin-bottom:4px;">' + (m.subject||'Sem assunto') + '</div>' +
-    '<div style="font-size:12px;color:var(--gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (m.message||'').substring(0,80) + '</div>' +
-  '</div>';
+    '<div style="font-weight:' + fontWeight + ';font-size:14px;margin-bottom:4px;">' + subject + '</div>' +
+    '<div style="font-size:12px;color:var(--gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + preview + '</div>';
+  div.addEventListener('click', function() { openReadMsg(mid, isSent); });
+  return div;
 }
 
 window.openReadMsg = async function(id, isSent) {
