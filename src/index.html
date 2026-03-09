@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>FitZone</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --black:#0A0A0A; --dark:#131313; --dark2:#1C1C1C; --dark3:#242424;
+      --yellow:#FFD600; --yellow2:#FFC200; --red:#FF3B30; --green:#30D158; --blue:#0A84FF;
+      --border:#2C2C2C; --text:#F0F0F0; --gray:#888; --gray2:#555;
+      --fd:'Bebas Neue',sans-serif; --fh:'Barlow Condensed',sans-serif; --fb:'Barlow',sans-serif;
+    }
+    html,body{height:100%;overflow:hidden}
+    body{background:var(--black);color:var(--text);font-family:var(--fb);-webkit-font-smoothing:antialiased}
+
+    /* ===== SCREENS ===== */
+    .screen{display:none;height:100dvh;flex-direction:column;overflow:hidden}
+    .screen.active{display:flex}
+
+    /* SPLASH */
+    #splash{background:var(--black);align-items:center;justify-content:center;gap:10px;position:relative;overflow:hidden}
+    #splash::before{content:'';position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:30px 30px;opacity:.25}
+    #splash::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:400px;height:400px;background:radial-gradient(circle,rgba(255,214,0,.14) 0,transparent 70%)}
+    .splash-logo{font-family:var(--fd);font-size:62px;letter-spacing:4px;color:var(--yellow);position:relative;z-index:1;animation:zIn .5s ease}
+    @keyframes zIn{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+    .splash-sub{font-family:var(--fh);font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--gray);position:relative;z-index:1}
+
+    /* LOGIN */
+    #login{background:var(--black);overflow-y:auto}
+    .login-top{background:var(--dark);padding:54px 24px 32px;text-align:center;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+    .login-top::before{content:'FITZONE';position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-family:var(--fd);font-size:100px;color:rgba(255,214,0,.04);white-space:nowrap;letter-spacing:4px}
+    .login-top::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--yellow),transparent)}
+    .login-logo{font-family:var(--fd);font-size:40px;letter-spacing:3px;color:var(--yellow);position:relative;z-index:1}
+    .login-sub{font-family:var(--fh);font-size:12px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gray);position:relative;z-index:1;margin-top:4px}
+    .login-body{padding:22px}
+    .login-banner{background:#2a0808;color:#ff9999;border-radius:6px;padding:12px;font-size:13px;margin-bottom:14px;display:none;border-left:3px solid var(--red)}
+    .form-group{margin-bottom:13px}
+    .form-label{display:block;font-family:var(--fh);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray);margin-bottom:5px}
+    .form-input{width:100%;background:var(--dark2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;font-size:15px;font-family:var(--fb);color:var(--text);outline:none;transition:border-color .2s}
+    .form-input:focus{border-color:var(--yellow)}
+    .form-select{width:100%;background:var(--dark2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;font-size:15px;font-family:var(--fb);color:var(--text);outline:none;appearance:none}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .form-textarea{width:100%;background:var(--dark2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;font-size:13px;font-family:var(--fb);color:var(--text);outline:none;resize:none;transition:border-color .2s;line-height:1.5}
+    .form-textarea:focus{border-color:var(--yellow)}
+    .btn-primary{width:100%;background:var(--yellow);color:var(--black);border:none;border-radius:6px;padding:14px;font-family:var(--fh);font-size:16px;font-weight:800;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+    .btn-primary:active{transform:scale(.97)}.btn-primary:hover{background:white}
+    .btn-outline{width:100%;background:transparent;color:var(--yellow);border:1px solid var(--border);border-radius:6px;padding:12px;font-family:var(--fh);font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+    .btn-outline:hover{border-color:var(--yellow)}
+    .login-switch{text-align:center;margin-top:14px;font-size:14px;color:var(--gray)}
+    .login-switch span{color:var(--yellow);font-weight:700;cursor:pointer}
+    .forgot-link{text-align:center;margin-top:8px;font-size:13px;color:var(--gray);cursor:pointer}
+    .forgot-link:hover{color:var(--yellow)}
+
+    /* EXPIRED */
+    #expired{background:var(--black);align-items:center;justify-content:center;padding:28px;text-align:center;gap:18px}
+    .expired-icon{font-size:64px}
+    .expired-title{font-family:var(--fd);font-size:48px;letter-spacing:2px;color:var(--red)}
+    .expired-msg{color:var(--gray);font-size:14px;line-height:1.7;max-width:300px}
+    .pix-card{background:var(--dark2);border:1px solid var(--yellow);border-left:4px solid var(--yellow);border-radius:6px;padding:18px;width:100%;max-width:340px}
+    .pix-label{font-family:var(--fh);font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:5px}
+    .pix-key{font-size:13px;font-weight:700;color:var(--yellow);word-break:break-all}
+    .btn-wa{display:flex;align-items:center;justify-content:center;gap:10px;background:#25D366;color:white;border:none;border-radius:6px;padding:14px;font-family:var(--fh);font-size:15px;font-weight:800;letter-spacing:1px;text-transform:uppercase;cursor:pointer;width:100%;max-width:340px}
+
+    /* MAIN */
+    #main{background:var(--black)}
+    .app-content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:68px}
+    .tab-page{display:none;animation:fadeIn .2s ease}
+    .tab-page.active{display:block}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+    /* BOTTOM NAV */
+    .bottom-nav{height:62px;background:var(--dark);border-top:1px solid var(--border);display:flex;align-items:center;position:fixed;bottom:0;left:0;right:0;z-index:50;padding-bottom:env(safe-area-inset-bottom,0px)}
+    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-family:var(--fh);font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--gray);cursor:pointer;padding:7px 4px;transition:color .2s;border:none;background:none}
+    .nav-item i{font-size:19px;transition:transform .2s}
+    .nav-item.active{color:var(--yellow)}.nav-item.active i{transform:scale(1.1)}
+
+    /* PAGE HEADERS */
+    .page-header{background:var(--dark);padding:14px 14px 10px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+    .page-title{font-family:var(--fd);font-size:26px;letter-spacing:1px;color:var(--yellow)}
+    .page-sub{font-family:var(--fh);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--gray);margin-top:1px}
+    .page-header-row{display:flex;align-items:center;justify-content:space-between}
+    .btn-add{background:var(--yellow);color:var(--black);border:none;border-radius:5px;padding:7px 12px;font-family:var(--fh);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:5px}
+    .btn-sm{background:var(--yellow);color:var(--black);border:none;border-radius:5px;padding:5px 10px;font-family:var(--fh);font-size:11px;font-weight:800;cursor:pointer}
+    .btn-sm-out{background:transparent;color:var(--gray);border:1px solid var(--border);border-radius:5px;padding:5px 10px;font-family:var(--fh);font-size:11px;font-weight:700;cursor:pointer}
+    .btn-sm-red{background:transparent;color:var(--red);border:1px solid rgba(255,59,48,.3);border-radius:5px;padding:5px 10px;font-family:var(--fh);font-size:11px;font-weight:700;cursor:pointer}
+
+    /* HOME */
+    .home-hero{background:var(--dark);padding:18px 14px 20px;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+    .home-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--yellow),transparent)}
+    .home-top-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .home-greeting{font-family:var(--fd);font-size:24px;letter-spacing:1px}
+    .home-greeting span{color:var(--yellow)}
+    .role-badge{background:rgba(255,214,0,.1);border:1px solid rgba(255,214,0,.3);padding:3px 9px;font-family:var(--fh);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--yellow)}
+    .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .stat-box{background:var(--dark2);border:1px solid var(--border);padding:10px 8px;text-align:center}
+    .stat-box-val{font-family:var(--fd);font-size:30px;color:var(--yellow);line-height:1}
+    .stat-box-label{font-family:var(--fh);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--gray);margin-top:2px}
+
+    /* WORKOUT CARDS */
+    .workout-card{background:var(--dark2);border:1px solid var(--border);margin:0 12px 10px;border-left:4px solid var(--yellow);cursor:pointer;transition:all .15s}
+    .workout-card:active{transform:scale(.98)}.workout-card:hover{background:var(--dark3)}
+    .wk-head{padding:12px 12px 8px;display:flex;align-items:center;gap:0}
+    .wk-letter{font-family:var(--fd);font-size:38px;color:var(--yellow);line-height:1;width:44px;flex-shrink:0}
+    .wk-info{flex:1;padding-left:10px}
+    .wk-name{font-family:var(--fh);font-size:17px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+    .wk-meta{font-size:12px;color:var(--gray);margin-top:1px}
+    .wk-exs{padding:0 12px 10px;display:flex;flex-wrap:wrap;gap:5px}
+    .ex-chip{background:var(--dark);border:1px solid var(--border);padding:3px 9px;font-family:var(--fh);font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text)}
+    .wk-actions{display:flex;gap:6px;padding:7px 12px;border-top:1px solid var(--border);background:rgba(0,0,0,.15)}
+
+    /* FREQUENCY */
+    .freq-calendar{background:var(--dark2);border:1px solid var(--border);margin:12px;padding:14px}
+    .freq-month{font-family:var(--fd);font-size:20px;letter-spacing:1px;color:var(--yellow);margin-bottom:10px}
+    .freq-wdays{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:5px}
+    .freq-wday{font-family:var(--fh);font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--gray);text-align:center}
+    .freq-days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+    .fday{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:11px;font-weight:700;border-radius:4px}
+    .fday-ok{background:var(--yellow);color:var(--black)}
+    .fday-today{background:rgba(255,214,0,.15);border:1px solid var(--yellow);color:var(--yellow)}
+    .fday-no{background:var(--dark3);color:var(--gray2)}
+    .fday-empty{background:transparent}
+    .freq-summary{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+    .freq-pct{font-family:var(--fd);font-size:34px;color:var(--yellow)}
+    .freq-label{font-family:var(--fh);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--gray);margin-top:2px}
+
+    /* EVOLUTION */
+    .evo-card{background:var(--dark2);border:1px solid var(--border);margin:0 12px 10px;padding:14px}
+    .evo-title{font-family:var(--fh);font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+    .evo-record{background:rgba(255,214,0,.1);border:1px solid rgba(255,214,0,.3);padding:2px 7px;font-family:var(--fh);font-size:10px;font-weight:700;color:var(--yellow)}
+    .evo-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)}
+    .evo-row:last-child{border:none}
+    .evo-date{font-size:11px;color:var(--gray)}
+    .evo-load{font-family:var(--fd);font-size:20px;color:var(--yellow)}
+    .evo-sets{font-size:11px;color:var(--text)}
+
+    /* ASSESSMENT */
+    .assess-card{background:var(--dark2);border:1px solid var(--border);margin:0 12px 10px;padding:14px}
+    .assess-date{font-family:var(--fh);font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--yellow);margin-bottom:10px}
+    .assess-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .assess-item{background:var(--dark3);padding:9px 11px}
+    .assess-item-label{font-family:var(--fh);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--gray);margin-bottom:3px}
+    .assess-item-val{font-family:var(--fd);font-size:22px}
+
+    /* FEED */
+    .ann-card{background:var(--dark2);border:1px solid var(--border);margin:0 12px 10px;overflow:hidden}
+    .ann-head{padding:11px 12px 0;display:flex;align-items:center;gap:9px}
+    .ann-avatar{width:36px;height:36px;background:var(--yellow);display:flex;align-items:center;justify-content:center;color:var(--black);font-family:var(--fd);font-size:17px;flex-shrink:0}
+    .ann-author{font-family:var(--fh);font-weight:800;font-size:13px;letter-spacing:.5px}
+    .ann-time{font-size:11px;color:var(--gray)}
+    .ann-cat{background:rgba(255,214,0,.1);color:var(--yellow);font-family:var(--fh);font-size:10px;font-weight:700;padding:2px 7px;margin-left:auto;letter-spacing:.5px;text-transform:uppercase}
+    .ann-body{padding:9px 12px;font-size:13px;color:var(--text);line-height:1.6}
+    .ann-footer{display:flex;align-items:center;gap:6px;padding:7px 12px;border-top:1px solid var(--border)}
+    .act-btn{background:none;border:none;color:var(--gray);font-family:var(--fh);font-size:12px;font-weight:700;cursor:pointer;padding:3px 7px;transition:color .2s;display:flex;align-items:center;gap:4px}
+    .act-btn.liked{color:var(--red)}.act-btn:hover{color:var(--yellow)}
+
+    /* PROFILE */
+    .prof-top{background:var(--dark);padding:20px 14px 24px;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+    .prof-top::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--yellow),transparent)}
+    .prof-avatar{width:60px;height:60px;background:var(--yellow);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:28px;color:var(--black);margin-bottom:10px}
+    .prof-name{font-family:var(--fd);font-size:26px;letter-spacing:1px}
+    .prof-role{font-family:var(--fh);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--yellow);margin-top:3px}
+    .prof-city{font-size:12px;color:var(--gray);margin-top:2px}
+    .expiry-card{margin:12px;background:var(--dark2);border:1px solid var(--border);border-left:3px solid var(--yellow);padding:12px;display:flex;align-items:center;gap:12px}
+    .expiry-icon{font-size:26px}
+    .expiry-label{font-family:var(--fh);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--gray)}
+    .expiry-val{font-family:var(--fd);font-size:20px;color:var(--yellow)}
+    .menu-list{margin:0 12px}
+    .menu-item{background:var(--dark2);border:1px solid var(--border);padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:7px;cursor:pointer;transition:border-color .2s}
+    .menu-item:hover{border-color:var(--yellow)}
+    .menu-ico{width:36px;height:36px;background:rgba(255,214,0,.07);border:1px solid rgba(255,214,0,.15);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;color:var(--yellow)}
+    .menu-title{font-family:var(--fh);font-size:14px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+    .menu-sub{font-size:11px;color:var(--gray);margin-top:1px}
+    .menu-arrow{margin-left:auto;color:var(--gray2);font-size:11px}
+    .menu-item.logout{background:rgba(255,59,48,.04);border-color:rgba(255,59,48,.15)}
+    .menu-item.logout .menu-ico{background:rgba(255,59,48,.08);border-color:rgba(255,59,48,.2);color:var(--red)}
+    .menu-item.logout .menu-title{color:var(--red)}
+
+    /* ADMIN */
+    #admin{background:var(--black);overflow-y:auto}
+    .admin-header{background:var(--dark);padding:14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .admin-logo{font-family:var(--fd);font-size:22px;letter-spacing:2px;color:var(--yellow)}
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px}
+    .stat-card{background:var(--dark2);border:1px solid var(--border);padding:14px;text-align:center;border-top:2px solid var(--yellow)}
+    .stat-val{font-family:var(--fd);font-size:42px;color:var(--yellow)}
+    .stat-label{font-family:var(--fh);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--gray)}
+    .admin-tabs{display:flex;background:var(--dark);border-bottom:1px solid var(--border);overflow-x:auto}
+    .admin-tab{min-width:76px;flex:1;padding:11px 6px;font-family:var(--fh);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:none;background:none;color:var(--gray);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+    .admin-tab.active{color:var(--yellow);border-bottom-color:var(--yellow)}
+    .admin-search{margin:10px 12px 8px;display:block;width:calc(100% - 24px);padding:9px 12px;background:var(--dark2);border:1px solid var(--border);border-radius:4px;font-size:13px;font-family:var(--fb);color:var(--text);outline:none}
+    .admin-search:focus{border-color:var(--yellow)}
+    .user-card{background:var(--dark2);border:1px solid var(--border);margin:0 12px 8px;padding:12px;border-left:2px solid var(--border);transition:border-color .2s}
+    .user-card:hover{border-left-color:var(--yellow)}
+    .user-card-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    .user-avatar{width:38px;height:38px;background:var(--yellow);display:flex;align-items:center;justify-content:center;color:var(--black);font-family:var(--fd);font-size:18px;flex-shrink:0}
+    .user-name{font-family:var(--fh);font-size:14px;font-weight:800;letter-spacing:.5px;text-transform:uppercase}
+    .user-email{font-size:11px;color:var(--gray);margin-top:1px}
+    .badge{padding:2px 7px;font-family:var(--fh);font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+    .badge-active{background:rgba(48,209,88,.1);color:var(--green);border:1px solid rgba(48,209,88,.25)}
+    .badge-blocked{background:rgba(255,59,48,.1);color:var(--red);border:1px solid rgba(255,59,48,.25)}
+    .badge-expired{background:rgba(255,214,0,.07);color:var(--yellow);border:1px solid rgba(255,214,0,.2)}
+    .badge-expiring{background:rgba(255,149,0,.08);color:#FF9500;border:1px solid rgba(255,149,0,.25)}
+    .user-card-footer{display:flex;gap:6px;padding-top:8px;border-top:1px solid var(--border)}
+    .user-btn{flex:1;padding:7px;font-family:var(--fh);font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;border:none;background:var(--dark3);color:var(--text);transition:all .2s}
+    .ubtn-renew{color:var(--green)}.ubtn-block{color:var(--red)}
+
+    /* MODALS */
+    .modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;align-items:flex-end;backdrop-filter:blur(6px)}
+    .modal-ov.open{display:flex}
+    .modal{background:var(--dark);border-top:2px solid var(--yellow);padding:18px 16px 32px;width:100%;max-height:92dvh;overflow-y:auto}
+    .modal-handle{width:38px;height:3px;background:var(--border);margin:0 auto 16px}
+    .modal-title{font-family:var(--fd);font-size:22px;letter-spacing:1px;margin-bottom:16px;color:var(--yellow)}
+
+    /* UTILS */
+    .loading{display:flex;justify-content:center;padding:36px}
+    .loading-spin{width:30px;height:30px;border:2px solid var(--border);border-top-color:var(--yellow);border-radius:50%;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    #toast{position:fixed;bottom:78px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--dark3);color:white;border:1px solid var(--border);border-left:3px solid var(--yellow);padding:11px 20px;font-family:var(--fh);font-size:13px;font-weight:700;letter-spacing:.5px;opacity:0;transition:all .3s;z-index:500;white-space:nowrap;pointer-events:none}
+    #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .empty-state{text-align:center;padding:56px 22px;color:var(--gray)}
+    .empty-state .ei{font-size:46px;display:block;margin-bottom:14px}
+    .empty-state h3{font-family:var(--fd);font-size:26px;letter-spacing:1px;color:var(--text);margin-bottom:7px}
+    .empty-state p{font-size:13px;line-height:1.5}
+    .filter-chips{display:flex;gap:7px;padding:9px 12px;overflow-x:auto}
+    .filter-chips::-webkit-scrollbar{display:none}
+    .chip{background:var(--dark2);border:1px solid var(--border);padding:5px 12px;font-family:var(--fh);font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:all .2s}
+    .chip.active{background:var(--yellow);color:var(--black);border-color:var(--yellow)}
+    .sec-row{padding:12px 12px 4px;display:flex;align-items:center;justify-content:space-between}
+    .sec-ttl{font-family:var(--fd);font-size:18px;letter-spacing:1px;color:var(--yellow)}
+
+    /* WORKOUT DETAIL SCREEN */
+    #workoutDetail{background:var(--black)}
+    .wkd-header{background:var(--dark);border-bottom:1px solid var(--border);border-top:2px solid var(--yellow);padding:14px;display:flex;align-items:center;gap:10px}
+    .back-btn{background:var(--dark2);border:1px solid var(--border);color:var(--text);width:36px;height:36px;border-radius:4px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center}
+    .wkd-title{font-family:var(--fd);font-size:22px;letter-spacing:1px;color:var(--yellow);flex:1}
+    .wkd-body{flex:1;overflow-y:auto;padding:14px}
+  </style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash" class="screen active">
+  <div class="splash-logo">FITZONE</div>
+  <div class="splash-sub">Treine · Evolua · Supere</div>
+</div>
+
+<!-- LOGIN -->
+<div id="login" class="screen">
+  <div class="login-top">
+    <div class="login-logo">FITZONE</div>
+    <div class="login-sub">Academia & Treinos</div>
+  </div>
+  <div class="login-body">
+    <div id="loginBanner" class="login-banner"></div>
+
+    <!-- LOGIN FORM -->
+    <div id="loginForm">
+      <div class="form-group"><label class="form-label">E-mail</label><input type="email" id="loginEmail" class="form-input" placeholder="seu@email.com"/></div>
+      <div class="form-group"><label class="form-label">Senha</label><input type="password" id="loginPassword" class="form-input" placeholder="••••••••"/></div>
+      <button class="btn-primary" onclick="doLogin()">ENTRAR</button>
+      <div class="forgot-link" onclick="showForgot()">Esqueci minha senha · contato@streetonline.com.br</div>
+      <div class="login-switch">Não tem conta? <span onclick="showRegister()">Cadastre-se grátis</span></div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="registerForm" style="display:none;">
+      <div class="form-group"><label class="form-label">Nome completo</label><input type="text" id="regName" class="form-input" placeholder="Seu nome"/></div>
+      <div class="form-group"><label class="form-label">E-mail</label><input type="email" id="regEmail" class="form-input" placeholder="seu@email.com"/></div>
+      <div class="form-group"><label class="form-label">Senha</label><input type="password" id="regPassword" class="form-input" placeholder="Mínimo 6 caracteres"/></div>
+      <div class="form-group"><label class="form-label">Telefone / WhatsApp</label><input type="tel" id="regPhone" class="form-input" placeholder="(27) 99999-9999"/></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Cidade</label><input type="text" id="regCity" class="form-input" placeholder="Cidade"/></div>
+        <div class="form-group"><label class="form-label">UF</label><input type="text" id="regState" class="form-input" placeholder="ES" maxlength="2"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Sou</label>
+        <select id="regRole" class="form-select">
+          <option value="aluno">🏃 Aluno</option>
+          <option value="personal">💪 Personal Trainer</option>
+        </select></div>
+      <div class="form-group"><label class="form-label">Objetivo</label>
+        <select id="regGoal" class="form-select">
+          <option>Hipertrofia</option><option>Emagrecimento</option><option>Força</option>
+          <option>Condicionamento</option><option>Saúde Geral</option>
+        </select></div>
+      <div class="form-group"><label class="form-label">Nível</label>
+        <select id="regLevel" class="form-select">
+          <option>Iniciante</option><option>Intermediário</option><option>Avançado</option>
+        </select></div>
+      <button class="btn-primary" onclick="doRegister()">CRIAR CONTA GRÁTIS</button>
+      <div class="login-switch">Já tem conta? <span onclick="showLogin()">Entrar</span></div>
+    </div>
+
+    <!-- FORGOT FORM -->
+    <div id="forgotForm" style="display:none;">
+      <div class="form-group"><label class="form-label">E-mail cadastrado</label><input type="email" id="forgotEmail" class="form-input" placeholder="seu@email.com"/></div>
+      <button class="btn-primary" onclick="doForgot()">ENVIAR LINK DE RECUPERAÇÃO</button>
+      <div style="text-align:center;margin-top:10px;font-size:13px;color:var(--gray);">Também disponível: contato@streetonline.com.br</div>
+      <div class="login-switch"><span onclick="showLogin()">← Voltar para login</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- EXPIRED -->
+<div id="expired" class="screen">
+  <div class="expired-icon">⏰</div>
+  <div class="expired-title">EXPIRADO</div>
+  <div class="expired-msg">Seu acesso encerrou. Renove via PIX e envie o comprovante pelo WhatsApp.</div>
+  <div class="pix-card">
+    <div class="pix-label">Chave PIX</div>
+    <div class="pix-key">rodrigowiltonalmeida@gmail.com</div>
+    <div style="margin-top:6px;font-size:12px;color:var(--gray);">R$29/mês · R$249/ano</div>
+  </div>
+  <button class="btn-wa" onclick="openWA()"><i class="fa-brands fa-whatsapp"></i>RENOVAR VIA WHATSAPP</button>
+  <div class="forgot-link" onclick="doLogout()">Sair da conta</div>
+</div>
+
+<!-- MAIN APP -->
+<div id="main" class="screen">
+  <div class="app-content">
+
+    <!-- HOME -->
+    <div id="tab-home" class="tab-page active">
+      <div class="home-hero">
+        <div class="home-top-row">
+          <div>
+            <div class="home-greeting">OLÁ, <span id="welcomeName">ATLETA</span>!</div>
+            <div style="font-family:var(--fh);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--gray);margin-top:1px;">Vamos treinar hoje?</div>
+          </div>
+          <div class="role-badge" id="homeRoleBadge">ALUNO</div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-box"><div class="stat-box-val" id="statWorkouts">0</div><div class="stat-box-label">Treinos</div></div>
+          <div class="stat-box"><div class="stat-box-val" id="statFreq">0%</div><div class="stat-box-label">Frequência</div></div>
+          <div class="stat-box"><div class="stat-box-val" id="statDays">—</div><div class="stat-box-label">Dias acesso</div></div>
+        </div>
+      </div>
+
+      <div class="sec-row" style="margin-top:8px;">
+        <span class="sec-ttl">MEUS TREINOS</span>
+        <button class="btn-sm" onclick="switchTab('workouts')">VER TODOS</button>
+      </div>
+      <div id="homeWorkoutPreview"></div>
+
+      <div style="padding:6px 12px 0;">
+        <button class="btn-primary" style="font-size:13px;padding:12px;" onclick="doCheckIn()">
+          ✅ REGISTRAR PRESENÇA DE HOJE
+        </button>
+      </div>
+
+      <div class="sec-row" style="margin-top:12px;">
+        <span class="sec-ttl">COMUNICADOS</span>
+        <span style="font-family:var(--fh);font-size:11px;font-weight:700;color:var(--yellow);cursor:pointer;" onclick="switchTab('feed')">VER TODOS →</span>
+      </div>
+      <div id="homeAnnouncePreview"></div>
+      <div style="height:10px;"></div>
+    </div>
+
+    <!-- WORKOUTS -->
+    <div id="tab-workouts" class="tab-page">
+      <div class="page-header">
+        <div class="page-header-row">
+          <div><div class="page-title">TREINOS</div><div class="page-sub" id="workoutsSubtitle">Seus treinos</div></div>
+          <button class="btn-add" id="btnAddWorkout" style="display:none;" onclick="openModal('createWorkoutModal')"><i class="fa-solid fa-plus"></i> Treino</button>
+        </div>
+      </div>
+      <div id="workoutsList" style="padding-top:10px;"></div>
+    </div>
+
+    <!-- FREQUENCY -->
+    <div id="tab-frequency" class="tab-page">
+      <div class="page-header">
+        <div class="page-header-row">
+          <div><div class="page-title">FREQUÊNCIA</div><div class="page-sub">Histórico de presença</div></div>
+        </div>
+      </div>
+      <div id="freqContent" style="padding-top:6px;"></div>
+    </div>
+
+    <!-- EVOLUTION -->
+    <div id="tab-evolution" class="tab-page">
+      <div class="page-header">
+        <div class="page-header-row">
+          <div><div class="page-title">EVOLUÇÃO</div><div class="page-sub">Histórico de cargas</div></div>
+          <button class="btn-add" onclick="openModal('addLoadModal')"><i class="fa-solid fa-plus"></i> Carga</button>
+        </div>
+      </div>
+      <div id="evolutionList" style="padding-top:10px;"></div>
+    </div>
+
+    <!-- FEED -->
+    <div id="tab-feed" class="tab-page">
+      <div class="page-header">
+        <div class="page-header-row">
+          <div><div class="page-title">FEED</div><div class="page-sub">Comunicados e dicas</div></div>
+          <button class="btn-add" id="btnAddAnnounce" style="display:none;" onclick="openModal('createAnnounceModal')"><i class="fa-solid fa-plus"></i></button>
+        </div>
+        <div class="filter-chips">
+          <div class="chip active" onclick="filterFeed('',this)">Todos</div>
+          <div class="chip" onclick="filterFeed('Comunicado',this)">📢 Avisos</div>
+          <div class="chip" onclick="filterFeed('Motivação',this)">🔥 Moto</div>
+          <div class="chip" onclick="filterFeed('Dica',this)">💡 Dicas</div>
+          <div class="chip" onclick="filterFeed('Desafio',this)">🏆 Desafios</div>
+        </div>
+      </div>
+      <div id="feedList" style="padding-top:10px;"></div>
+    </div>
+
+    <!-- PROFILE -->
+    <div id="tab-profile" class="tab-page">
+      <div class="prof-top">
+        <div class="prof-avatar" id="profAvatar">F</div>
+        <div class="prof-name" id="profName">—</div>
+        <div class="prof-role" id="profRole">ALUNO</div>
+        <div class="prof-city" id="profCity"></div>
+      </div>
+      <div class="expiry-card">
+        <div class="expiry-icon">⏰</div>
+        <div><div class="expiry-label">Vencimento do acesso</div><div class="expiry-val" id="profExpiry">—</div></div>
+      </div>
+      <div class="menu-list">
+        <div class="menu-item" onclick="openEditProfile()">
+          <div class="menu-ico"><i class="fa-solid fa-pen"></i></div>
+          <div><div class="menu-title">Editar Perfil</div><div class="menu-sub">Nome, objetivo, nível</div></div>
+          <i class="fa-solid fa-chevron-right menu-arrow"></i>
+        </div>
+        <div class="menu-item" onclick="openModal('addAssessmentModal')">
+          <div class="menu-ico"><i class="fa-solid fa-ruler"></i></div>
+          <div><div class="menu-title">Avaliação Física</div><div class="menu-sub">Medidas e composição</div></div>
+          <i class="fa-solid fa-chevron-right menu-arrow"></i>
+        </div>
+        <div class="menu-item" onclick="openDiet()">
+          <div class="menu-ico"><i class="fa-solid fa-apple-whole"></i></div>
+          <div><div class="menu-title">Plano Alimentar</div><div class="menu-sub">Calorias e macros</div></div>
+          <i class="fa-solid fa-chevron-right menu-arrow"></i>
+        </div>
+        <div class="menu-item" onclick="openModal('lgpdModal')">
+          <div class="menu-ico"><i class="fa-solid fa-lock"></i></div>
+          <div><div class="menu-title">Privacidade & LGPD</div><div class="menu-sub">contato@streetonline.com.br</div></div>
+          <i class="fa-solid fa-chevron-right menu-arrow"></i>
+        </div>
+        <div class="menu-item logout" onclick="doLogout()">
+          <div class="menu-ico"><i class="fa-solid fa-right-from-bracket"></i></div>
+          <div><div class="menu-title">Sair</div></div>
+        </div>
+      </div>
+      <div id="assessHistory" style="margin:0 12px 12px;"></div>
+      <div style="height:20px;"></div>
+    </div>
+
+  </div><!-- end app-content -->
+
+  <div class="bottom-nav">
+    <button class="nav-item active" id="nav-home" onclick="switchTab('home')"><i class="fa-solid fa-house"></i><span>Home</span></button>
+    <button class="nav-item" id="nav-workouts" onclick="switchTab('workouts')"><i class="fa-solid fa-dumbbell"></i><span>Treinos</span></button>
+    <button class="nav-item" id="nav-frequency" onclick="switchTab('frequency')"><i class="fa-solid fa-calendar-check"></i><span>Freq.</span></button>
+    <button class="nav-item" id="nav-evolution" onclick="switchTab('evolution')"><i class="fa-solid fa-chart-line"></i><span>Evolução</span></button>
+    <button class="nav-item" id="nav-feed" onclick="switchTab('feed')"><i class="fa-solid fa-bullhorn"></i><span>Feed</span></button>
+    <button class="nav-item" id="nav-profile" onclick="switchTab('profile')"><i class="fa-solid fa-user"></i><span>Perfil</span></button>
+  </div>
+</div>
+
+<!-- WORKOUT DETAIL -->
+<div id="workoutDetail" class="screen">
+  <div class="wkd-header">
+    <button class="back-btn" onclick="closeWkDetail()"><i class="fa-solid fa-arrow-left"></i></button>
+    <div class="wkd-title" id="wkdTitle">TREINO</div>
+    <div id="wkdActions"></div>
+  </div>
+  <div class="wkd-body" id="wkdBody"></div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin" class="screen">
+  <div class="admin-header">
+    <div class="admin-logo">FITZONE ADMIN</div>
+    <button style="background:rgba(255,59,48,.1);border:1px solid rgba(255,59,48,.3);color:var(--red);padding:7px 12px;font-family:var(--fh);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.5px;text-transform:uppercase;" onclick="doLogout()">SAIR</button>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-val" id="adminTotal">0</div><div class="stat-label">Usuários</div></div>
+    <div class="stat-card"><div class="stat-val" id="adminActive">0</div><div class="stat-label">Ativos</div></div>
+    <div class="stat-card"><div class="stat-val" id="adminExpiring" style="color:#FF9500;">0</div><div class="stat-label">Expirando</div></div>
+    <div class="stat-card"><div class="stat-val" id="adminExpired" style="color:var(--red);">0</div><div class="stat-label">Expirados</div></div>
+  </div>
+  <div class="admin-tabs">
+    <button class="admin-tab active" onclick="setAdminTab('active',this)">Ativos</button>
+    <button class="admin-tab" onclick="setAdminTab('expiring',this)">Expirando</button>
+    <button class="admin-tab" onclick="setAdminTab('expired',this)">Expirados</button>
+    <button class="admin-tab" onclick="setAdminTab('blocked',this)">Bloqueados</button>
+    <button class="admin-tab" onclick="setAdminTab('all',this)">Todos</button>
+  </div>
+  <input class="admin-search" id="adminSearch" placeholder="Buscar nome ou e-mail..." oninput="renderAdminUsers()"/>
+  <div id="adminUsersList" style="padding-bottom:20px;"></div>
+</div>
+
+<!-- ===== MODALS ===== -->
+
+<!-- Create Workout -->
+<div id="createWorkoutModal" class="modal-ov">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">+ NOVO TREINO</div>
+    <div style="display:flex;flex-direction:column;gap:11px;">
+      <div class="form-group"><label class="form-label">Nome do Treino</label><input type="text" id="wkName" class="form-input" placeholder="Ex: Treino A — Peito/Tríceps"/></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Letra</label><input type="text" id="wkLetter" class="form-input" placeholder="A" maxlength="1"/></div>
+        <div class="form-group"><label class="form-label">Foco Muscular</label><input type="text" id="wkFocus" class="form-input" placeholder="Peito, Costas..."/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Exercícios (um por linha: Nome | Séries x Reps | Carga | Descanso)</label>
+        <textarea id="wkExercises" class="form-textarea" rows="6" placeholder="Supino Reto | 4x10 | 80kg | 90s&#10;Crucifixo | 3x12 | 14kg | 60s&#10;Tríceps Pulley | 4x12 | 35kg | 60s"></textarea></div>
+      <div class="form-group"><label class="form-label">Observações</label><textarea id="wkNotes" class="form-textarea" rows="2"></textarea></div>
+      <button class="btn-primary" onclick="submitCreateWorkout()">SALVAR TREINO</button>
+      <button class="btn-outline" onclick="closeModal('createWorkoutModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Workout -->
+<div id="editWorkoutModal" class="modal-ov">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✏️ EDITAR TREINO</div>
+    <input type="hidden" id="editWkId"/>
+    <div style="display:flex;flex-direction:column;gap:11px;">
+      <div class="form-group"><label class="form-label">Nome</label><input type="text" id="editWkName" class="form-input"/></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Letra</label><input type="text" id="editWkLetter" class="form-input" maxlength="1"/></div>
+        <div class="form-group"><label class="form-label">Foco</label><input type="text" id="editWkFocus" class="form-input"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Exercícios</label><textarea id="editWkExercises" class="form-textarea" rows="6"></textarea></div>
+      <div class="form-group"><label class="form-label">Observações</label><textarea id="editWkNotes" class="form-textarea" rows="2"></textarea></div>
+      <button class="btn-primary" onclick="submitEditWorkout()">SALVAR</button>
+      <button class="btn-outline" onclick="closeModal('editWorkoutModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Load -->
+<div id="addLoadModal" class="modal-ov">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📊 REGISTRAR CARGA</div>
+    <div style="display:flex;flex-direction:column;gap:11px;">
+      <div class="form-group"><label class="form-label">Exercício</label><input type="text" id="loadEx" class="form-input" placeholder="Ex: Supino Reto"/></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Carga (kg)</label><input type="number" step="0.5" id="loadWeight" class="form-input" placeholder="80"/></div>
+        <div class="form-group"><label class="form-label">Séries x Reps</label><input type="text" id="loadSets" class="form-input" placeholder="4x10"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Data</label><input type="date" id="loadDate" class="form-input"/></div>
+      <div class="form-group"><label class="form-label">Observação</label><input type="text" id="loadNote" class="form-input" placeholder="Opcional"/></div>
+      <button class="btn-primary" onclick="submitLoad()">SALVAR</button>
+      <button class="btn-outline" onclick="closeModal('addLoadModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Assessment -->
+<div id="addAssessmentModal" class="modal-ov">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📏 AVALIAÇÃO FÍSICA</div>
+    <div style="display:flex;flex-direction:column;gap:11px;">
+      <div class="form-group"><label class="form-label">Data</label><input type="date" id="assessDate" class="form-input"/></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Peso (kg)</label><input type="number" step="0.1" id="assessWeight" class="form-input" placeholder="75.5"/></div>
+        <div class="form-group"><label class="form-label">Altura (cm)</label><input type="number" id="assessHeight" class="form-input" placeholder="175"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">% Gordura</label><input type="number" step="0.1" id="assessFat" class="form-input" placeholder="18.5"/></div>
+        <div class="form-group"><label class="form-label">% Músculo</label><input type="number" step="0.1" id="assessMuscle" class="form-input" placeholder="42.0"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Cintura (cm)</label><input type="number" step="0.5" id="assessWaist" class="form-input" placeholder="80"/></div>
+        <div class="form-group"><label class="form-label">Quadril (cm)</label><input type="number" step="0.5" id="assessHip" class="form-input" placeholder="95"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Braço (cm)</label><input type="number" step="0.5" id="assessArm" class="form-input" placeholder="38"/></div>
+        <div class="form-group"><label class="form-label">Coxa (cm)</label><input type="number" step="0.5" id="assessThigh" class="form-input" placeholder="58"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Observações</label><textarea id="assessNotes" class="form-textarea" rows="2"></textarea></div>
+      <button class="btn-primary" onclick="submitAssessment()">SALVAR AVALIAÇÃO</button>
+      <button class="btn-outline" onclick="closeModal('addAssessmentModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Diet -->
+<div id="dietModal" class="modal-ov">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🍎 PLANO ALIMENTAR</div>
+    <div id="dietView"></div>
+    <div id="dietEditForm" style="display:none;flex-direction:column;gap:11px;">
+      <div class="form-group"><label class="form-label">Meta Calórica (kcal)</label><input type="number" id="dietCal" class="form-input" placeholder="2000"/></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Proteínas (g)</label><input type="number" id="dietProt" class="form-input" placeholder="150"/></div>
+        <div class="form-group"><label class="form-label">Carboidratos (g)</label><input type="number" id="dietCarb" class="form-input" placeholder="250"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Gorduras (g)</label><input type="number" id="dietFat" class="form-input" placeholder="65"/></div>
+      <div class="form-group"><label class="form-label">Orientações gerais</label><textarea id="dietNotes" class="form-textarea" rows="3" placeholder="Evitar frituras, priorizar proteínas magras..."></textarea></div>
+      <div class="form-group"><label class="form-label">Refeições sugeridas</label><textarea id="dietMeals" class="form-textarea" rows="5" placeholder="Café: aveia + fruta + whey&#10;Almoço: arroz + frango + legumes&#10;Pré-treino: banana + pasta de amendoim"></textarea></div>
+      <button class="btn-primary" onclick="submitDiet()">SALVAR PLANO</button>
+      <button class="btn-outline" onclick="closeDietEdit()">Cancelar</button>
+    </div>
+    <button class="btn-outline" id="dietEditBtn" onclick="showDietEdit()" style="margin-top:10px;">✏️ EDITAR PLANO</button>
+    <button class="btn-outline" onclick="closeModal('dietModal')" style="margin-top:8px;">Fechar</button>
+  </div>
+</div>
+
+<!-- Edit Profile -->
+<div id="editProfileModal" class="modal-ov">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✏️ EDITAR PERFIL</div>
+    <div style="display:flex;flex-direction:column;gap:11px;">
+      <div class="form-group"><label class="form-label">Nome</label><input type="text" id="epName" class="form-input"/></div>
+      <div class="form-group"><label class="form-label">Telefone</label><input type="tel" id="epPhone" class="form-input"/></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Cidade</label><input type="text" id="epCity" class="form-input"/></div>
+        <div class="form-group"><label class="form-label">UF</label><input type="text" id="epState" class="form-input" maxlength="2"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Objetivo</label>
+        <select id="epGoal" class="form-select">
+          <option>Hipertrofia</option><option>Emagrecimento</option><option>Força</option><option>Condicionamento</option><option>Saúde Geral</option>
+        </select></div>
+      <div class="form-group"><label class="form-label">Nível</label>
+        <select id="epLevel" class="form-select">
+          <option>Iniciante</option><option>Intermediário</option><option>Avançado</option>
+        </select></div>
+      <button class="btn-primary" onclick="submitEditProfile()">SALVAR</button>
+      <button class="btn-outline" onclick="closeModal('editProfileModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create Announcement -->
+<div id="createAnnounceModal" class="modal-ov">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📢 NOVO COMUNICADO</div>
+    <div style="display:flex;flex-direction:column;gap:11px;">
+      <div class="form-group"><label class="form-label">Categoria</label>
+        <select id="annCat" class="form-select">
+          <option>Comunicado</option><option>Motivação</option><option>Dica</option><option>Desafio</option><option>Geral</option>
+        </select></div>
+      <div class="form-group"><label class="form-label">Conteúdo</label><textarea id="annContent" class="form-textarea" rows="4" placeholder="Escreva o comunicado..."></textarea></div>
+      <button class="btn-primary" onclick="submitAnnouncement()">PUBLICAR</button>
+      <button class="btn-outline" onclick="closeModal('createAnnounceModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- LGPD -->
+<div id="lgpdModal" class="modal-ov">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔒 PRIVACIDADE & LGPD</div>
+    <div style="max-height:36vh;overflow-y:auto;font-size:13px;color:var(--gray);line-height:1.7;margin-bottom:14px;border:1px solid var(--border);padding:12px;">
+      <strong style="color:var(--yellow);">Política de Privacidade — FitZone</strong><br><br>
+      Coletamos apenas dados necessários: nome, e-mail, cidade, telefone, dados de treino e avaliações físicas.<br><br>
+      <strong>Seus direitos (LGPD — Lei 13.709/2018):</strong><br>
+      · Acessar, corrigir ou excluir seus dados a qualquer momento<br>
+      · Revogar consentimento quando desejar<br>
+      · Portabilidade dos seus dados<br><br>
+      Armazenamento: Google Firebase (servidores EUA).<br>Dúvidas: <span style="color:var(--yellow);">contato@streetonline.com.br</span>
+    </div>
+    <div style="background:rgba(255,59,48,.04);border:1px solid rgba(255,59,48,.25);padding:12px;margin-bottom:10px;">
+      <p style="font-size:12px;color:var(--red);margin-bottom:9px;">⚠️ Excluir conta remove permanentemente todos seus dados.</p>
+      <button class="btn-outline" style="color:var(--red);border-color:rgba(255,59,48,.35);width:100%;" onclick="deleteMyAccount()">🗑️ EXCLUIR MINHA CONTA</button>
+    </div>
+    <button class="btn-outline" onclick="closeModal('lgpdModal')">FECHAR</button>
+  </div>
+</div>
+
+<!-- Renew (Admin) -->
+<div id="renewModal" class="modal-ov">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔄 RENOVAR ACESSO</div>
+    <input type="hidden" id="renewUid"/>
+    <div style="display:flex;flex-direction:column;gap:11px;">
+      <div class="form-group"><label class="form-label">Usuário</label><input type="text" id="renewName" class="form-input" readonly/></div>
+      <div class="form-group"><label class="form-label">Período</label>
+        <select id="renewDays" class="form-select">
+          <option value="30">30 dias — R$29</option>
+          <option value="60">60 dias — R$55</option>
+          <option value="90">90 dias — R$79</option>
+          <option value="365">365 dias — R$249</option>
+        </select></div>
+      <button class="btn-primary" onclick="submitRenew()">CONFIRMAR RENOVAÇÃO</button>
+      <button class="btn-outline" onclick="closeModal('renewModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script type="module">
+import {
+  auth, onAuthStateChanged, loginUser, registerUser, logoutUser, resetPassword,
+  getCurrentUser, updateUserProfile,
+  getMyWorkouts, getWorkoutsCreatedBy, createWorkout, updateWorkout, deleteWorkout,
+  logLoad, getAllLoads, deleteLoad,
+  checkIn, getCheckins,
+  getAssessments, addAssessment, deleteAssessment,
+  getDietPlan, saveDietPlan,
+  getAnnouncements, createAnnouncement, toggleAnnounceLike,
+  getAllUsers, toggleUserActive, renewAccess, getAdminStats,
+  deleteItem, updateItem, Timestamp
+} from './services/firebase.js';
+
+let CU = null; // currentUser
+let allWorkouts = [], allLoads = [], allAnnouncements = [];
+let allAdminUsers = [], curAdminTab = 'active';
+
+// ===== UTILS =====
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+window.openModal = openModal; window.closeModal = closeModal;
+
+document.querySelectorAll('.modal-ov').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+function timeAgo(ts) {
+  if (!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  const s = (Date.now() - d) / 1000;
+  if (s < 60) return 'agora';
+  if (s < 3600) return Math.floor(s/60) + 'min';
+  if (s < 86400) return Math.floor(s/3600) + 'h';
+  return Math.floor(s/86400) + 'd';
+}
+function isProf() { return CU?.isAdmin || CU?.role === 'personal'; }
+
+// ===== AUTH FLOW =====
+onAuthStateChanged(auth, async (fu) => {
+  if (!fu) { show('login'); return; }
+  try {
+    CU = await getCurrentUser();
+    if (!CU) { show('login'); return; }
+    if (!CU.isAdmin && !CU.isActive) {
+      await logoutUser(); show('login');
+      showBanner('🚫 Conta bloqueada. Contato: (27) 99273-4399'); return;
+    }
+    const expiry = CU.expirationDate?.toDate?.();
+    if (!CU.isAdmin && expiry && expiry < new Date()) { show('expired'); return; }
+    if (CU.isAdmin) { show('admin'); loadAdmin(); }
+    else { show('main'); initApp(); }
+  } catch(e) { show('login'); }
+});
+
+setTimeout(() => {
+  if (document.getElementById('splash').classList.contains('active')) show('login');
+}, 2000);
+
+function showBanner(msg) {
+  const b = document.getElementById('loginBanner');
+  b.textContent = msg; b.style.display = 'block';
+}
+
+// ===== LOGIN FORMS =====
+function showLogin() { ['loginForm','registerForm','forgotForm'].forEach(id => document.getElementById(id).style.display='none'); document.getElementById('loginForm').style.display='block'; }
+function showRegister() { ['loginForm','registerForm','forgotForm'].forEach(id => document.getElementById(id).style.display='none'); document.getElementById('registerForm').style.display='block'; }
+function showForgot() { ['loginForm','registerForm','forgotForm'].forEach(id => document.getElementById(id).style.display='none'); document.getElementById('forgotForm').style.display='block'; }
+window.showLogin=showLogin; window.showRegister=showRegister; window.showForgot=showForgot;
+
+window.doLogin = async function() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPassword').value;
+  if (!email || !pass) { toast('Preencha e-mail e senha'); return; }
+  try {
+    CU = await loginUser(email, pass);
+    if (CU.isAdmin) { show('admin'); loadAdmin(); }
+    else { show('main'); initApp(); }
+  } catch(e) {
+    const msgs = { EXPIRED: null, BLOCKED: '🚫 Conta bloqueada. Contato: (27) 99273-4399',
+      'auth/invalid-credential': 'E-mail ou senha incorretos', 'auth/too-many-requests': 'Muitas tentativas. Aguarde.' };
+    if (e.message === 'EXPIRED') { show('expired'); return; }
+    showBanner(msgs[e.message] || msgs[e.code] || 'Erro ao fazer login');
+  }
+}
+
+window.doRegister = async function() {
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pass = document.getElementById('regPassword').value;
+  if (!name || !email || !pass) { toast('Preencha nome, e-mail e senha'); return; }
+  if (pass.length < 6) { toast('Senha mínimo 6 caracteres'); return; }
+  try {
+    CU = await registerUser({
+      name, email, password: pass,
+      phone: document.getElementById('regPhone').value.trim(),
+      city: document.getElementById('regCity').value.trim(),
+      state: document.getElementById('regState').value.trim(),
+      role: document.getElementById('regRole').value,
+      goal: document.getElementById('regGoal').value,
+      level: document.getElementById('regLevel').value
+    });
+    show('main'); initApp();
+  } catch(e) {
+    const msgs = { 'auth/email-already-in-use': 'E-mail já cadastrado', 'auth/weak-password': 'Senha muito fraca' };
+    toast(msgs[e.code] || 'Erro ao cadastrar: ' + e.message);
+  }
+}
+
+window.doForgot = async function() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  if (!email) { toast('Informe o e-mail'); return; }
+  try { await resetPassword(email); toast('✅ Link enviado para ' + email); showLogin(); }
+  catch(e) { toast('E-mail não encontrado'); }
+}
+
+window.doLogout = async function() { await logoutUser(); CU = null; show('login'); }
+window.openWA = function() { window.open('https://wa.me/5527992734399?text=Quero%20renovar%20FitZone!','_blank'); }
+
+// ===== INIT =====
+function initApp() {
+  if (isProf()) {
+    document.getElementById('btnAddWorkout').style.display = 'flex';
+    document.getElementById('btnAddAnnounce').style.display = 'flex';
+  }
+  loadHomeStats();
+  loadHomeWorkouts();
+  loadHomeAnnouncements();
+  renderProfile();
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  const navEl = document.getElementById('nav-' + tab);
+  if (navEl) navEl.classList.add('active');
+  if (tab === 'workouts' && !allWorkouts.length) loadWorkouts();
+  if (tab === 'frequency') loadFrequency();
+  if (tab === 'evolution' && !allLoads.length) loadEvolution();
+  if (tab === 'feed' && !allAnnouncements.length) loadFeed();
+  if (tab === 'profile') renderProfileTab();
+}
+window.switchTab = switchTab;
+
+// ===== HOME STATS =====
+async function loadHomeStats() {
+  if (!CU) return;
+  try {
+    const first = (CU.name || 'ATLETA').split(' ')[0].toUpperCase();
+    document.getElementById('welcomeName').textContent = first;
+    document.getElementById('homeRoleBadge').textContent = CU.role === 'personal' ? 'PERSONAL' : 'ALUNO';
+    document.getElementById('statWorkouts').textContent = CU.totalWorkouts || 0;
+    const expiry = CU.expirationDate?.toDate?.();
+    const daysLeft = expiry ? Math.max(0, Math.floor((expiry - Date.now()) / 86400000)) : 0;
+    document.getElementById('statDays').textContent = daysLeft;
+    const month = new Date().toISOString().slice(0,7);
+    const checkins = await getCheckins(CU.uid, month);
+    const pct = Math.min(100, Math.round((checkins.length / 26) * 100));
+    document.getElementById('statFreq').textContent = pct + '%';
+  } catch(e) {}
+}
+
+async function loadHomeWorkouts() {
+  const c = document.getElementById('homeWorkoutPreview');
+  c.innerHTML = '<div class="loading"><div class="loading-spin"></div></div>';
+  try {
+    const wks = await getMyWorkouts(CU.uid);
+    allWorkouts = wks;
+    if (!wks.length) { c.innerHTML = '<div style="padding:12px 12px 4px;font-size:13px;color:var(--gray);">Nenhum treino atribuído ainda.</div>'; return; }
+    c.innerHTML = wks.slice(0,2).map(w => renderWorkoutCard(w)).join('');
+  } catch(e) { c.innerHTML = '<div style="padding:12px;font-size:12px;color:var(--red);">' + e.message + '</div>'; }
+}
+
+async function loadHomeAnnouncements() {
+  const c = document.getElementById('homeAnnouncePreview');
+  try {
+    const items = await getAnnouncements(2);
+    allAnnouncements = items;
+    c.innerHTML = items.map(a => renderAnnCard(a)).join('');
+  } catch(e) { c.innerHTML = ''; }
+}
+
+// ===== RENDER HELPERS =====
+function renderWorkoutCard(w) {
+  const isMine = w.createdBy === CU?.uid || CU?.isAdmin;
+  return `<div class="workout-card" onclick="openWkDetail('${w.id}')">
+    <div class="wk-head">
+      <div class="wk-letter">${w.letter||'A'}</div>
+      <div class="wk-info">
+        <div class="wk-name">${w.name||'Treino'}</div>
+        <div class="wk-meta">${w.focus||''} · ${w.exercises?.length||0} exercícios</div>
+      </div>
+    </div>
+    <div class="wk-exs">
+      ${(w.exercises||[]).slice(0,5).map(ex=>`<div class="ex-chip">${ex.name||ex}</div>`).join('')}
+      ${(w.exercises?.length||0)>5?`<div class="ex-chip" style="color:var(--gray)">+${w.exercises.length-5}</div>`:''}
+    </div>
+    <div class="wk-actions" onclick="event.stopPropagation()">
+      <button class="btn-sm" onclick="openWkDetail('${w.id}')">VER</button>
+      ${isMine?`<button class="btn-sm-out" onclick="openEditWk('${w.id}')">✏️</button>`:''}
+      ${isMine?`<button class="btn-sm-red" onclick="confirmDelWk('${w.id}','${(w.name||'').replace(/'/g,'')}')">🗑️</button>`:''}
+    </div>
+  </div>`;
+}
+
+function renderAnnCard(a) {
+  const liked = a.likedBy?.includes(CU?.uid);
+  const isMine = a.authorUid === CU?.uid || CU?.isAdmin;
+  return `<div class="ann-card">
+    <div class="ann-head">
+      <div class="ann-avatar">${(a.authorName||'F')[0].toUpperCase()}</div>
+      <div><div class="ann-author">${a.authorName||'FitZone'}</div><div class="ann-time">${timeAgo(a.createdAt)}</div></div>
+      <div class="ann-cat">${a.category||'Geral'}</div>
+    </div>
+    <div class="ann-body">${a.content}</div>
+    <div class="ann-footer">
+      <button class="act-btn ${liked?'liked':''}" onclick="handleLike('${a.id}')"><i class="fa-${liked?'solid':'regular'} fa-heart"></i> ${a.likes||0}</button>
+      ${isMine?`<button class="act-btn" onclick="delAnn('${a.id}')"><i class="fa-solid fa-trash"></i></button>`:''}
+    </div>
+  </div>`;
+}
+
+// ===== WORKOUTS TAB =====
+async function loadWorkouts() {
+  const c = document.getElementById('workoutsList');
+  c.innerHTML = '<div class="loading"><div class="loading-spin"></div></div>';
+  try {
+    let wks;
+    if (isProf()) {
+      wks = await getWorkoutsCreatedBy(CU.uid);
+      document.getElementById('workoutsSubtitle').textContent = 'Treinos que você criou';
+    } else {
+      wks = await getMyWorkouts(CU.uid);
+      document.getElementById('workoutsSubtitle').textContent = 'Seus treinos';
+    }
+    allWorkouts = wks;
+    if (!wks.length) {
+      c.innerHTML = `<div class="empty-state"><span class="ei">🏋️</span><h3>NENHUM TREINO</h3><p>${isProf()?'Crie seu primeiro treino!':'Aguarde seu personal atribuir treinos.'}</p></div>`;
+      return;
+    }
+    c.innerHTML = wks.map(w => renderWorkoutCard(w)).join('');
+  } catch(e) { c.innerHTML = `<div class="empty-state"><h3>ERRO</h3><p>${e.message}</p></div>`; }
+}
+
+window.openWkDetail = function(id) {
+  const w = allWorkouts.find(x => x.id === id);
+  if (!w) return;
+  const isMine = w.createdBy === CU?.uid || CU?.isAdmin;
+  document.getElementById('wkdTitle').textContent = 'TREINO ' + (w.letter||'') + ' — ' + (w.name||'').toUpperCase();
+  document.getElementById('wkdActions').innerHTML = isMine ? `<button class="btn-sm-out" onclick="openEditWk('${w.id}')">✏️</button>` : '';
+  document.getElementById('wkdBody').innerHTML = `
+    ${w.focus?`<div style="font-family:var(--fh);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--yellow);margin-bottom:14px;">📌 ${w.focus}</div>`:''}
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px;">
+      ${(w.exercises||[]).map((ex,i)=>`
+        <div style="background:var(--dark2);border:1px solid var(--border);border-left:3px solid var(--yellow);padding:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+            <div style="font-family:var(--fh);font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;">${ex.name||ex}</div>
+            <div style="font-family:var(--fd);font-size:20px;color:var(--yellow);">${ex.sets||''}</div>
+          </div>
+          <div style="display:flex;gap:14px;font-size:12px;color:var(--gray);">
+            ${ex.weight?`<span>⚡ ${ex.weight}</span>`:''}
+            ${ex.rest?`<span>⏱ ${ex.rest}</span>`:''}
+          </div>
+        </div>`).join('')}
+    </div>
+    ${w.notes?`<div style="background:rgba(255,214,0,.04);border:1px solid rgba(255,214,0,.15);padding:12px;font-size:13px;color:var(--gray);line-height:1.6;margin-bottom:16px;"><strong style="color:var(--yellow);">OBSERVAÇÕES</strong><br>${w.notes}</div>`:''}
+    <button class="btn-primary" style="margin-bottom:16px;" onclick="checkInWithWk('${w.id}','${(w.name||'').replace(/'/g,'')}')">✅ REGISTRAR PRESENÇA COM ESTE TREINO</button>
+    <div style="height:16px;"></div>`;
+  show('workoutDetail');
+}
+
+window.closeWkDetail = function() { show('main'); }
+
+window.openEditWk = function(id) {
+  const w = allWorkouts.find(x => x.id === id);
+  if (!w) return;
+  document.getElementById('editWkId').value = id;
+  document.getElementById('editWkName').value = w.name||'';
+  document.getElementById('editWkLetter').value = w.letter||'';
+  document.getElementById('editWkFocus').value = w.focus||'';
+  document.getElementById('editWkNotes').value = w.notes||'';
+  document.getElementById('editWkExercises').value = (w.exercises||[]).map(ex => [ex.name,ex.sets,ex.weight,ex.rest].filter(Boolean).join(' | ')).join('\n');
+  openModal('editWorkoutModal');
+}
+
+function parseExercises(text) {
+  return text.split('\n').filter(l=>l.trim()).map(line => {
+    const p = line.split('|').map(s=>s.trim());
+    return { name: p[0]||'', sets: p[1]||'', weight: p[2]||'', rest: p[3]||'' };
+  });
+}
+
+window.submitCreateWorkout = async function() {
+  const name = document.getElementById('wkName').value.trim();
+  if (!name) { toast('Informe o nome do treino'); return; }
+  try {
+    await createWorkout({
+      name, letter: document.getElementById('wkLetter').value.toUpperCase(),
+      focus: document.getElementById('wkFocus').value.trim(),
+      exercises: parseExercises(document.getElementById('wkExercises').value),
+      notes: document.getElementById('wkNotes').value.trim(),
+      assignedTo: [CU.uid]
+    }, CU.uid, CU.name);
+    closeModal('createWorkoutModal');
+    toast('✅ Treino criado!');
+    allWorkouts = []; loadWorkouts(); loadHomeWorkouts();
+    ['wkName','wkLetter','wkFocus','wkExercises','wkNotes'].forEach(id=>document.getElementById(id).value='');
+  } catch(e) { toast('Erro: ' + e.message); }
+}
+
+window.submitEditWorkout = async function() {
+  const id = document.getElementById('editWkId').value;
+  try {
+    await updateWorkout(id, {
+      name: document.getElementById('editWkName').value.trim(),
+      letter: document.getElementById('editWkLetter').value.toUpperCase(),
+      focus: document.getElementById('editWkFocus').value.trim(),
+      exercises: parseExercises(document.getElementById('editWkExercises').value),
+      notes: document.getElementById('editWkNotes').value.trim()
+    });
+    closeModal('editWorkoutModal'); toast('✅ Treino atualizado!');
+    allWorkouts = []; loadWorkouts(); loadHomeWorkouts();
+  } catch(e) { toast('Erro: ' + e.message); }
+}
+
+window.confirmDelWk = async function(id, name) {
+  if (!confirm('Excluir treino "' + name + '"?')) return;
+  try { await deleteWorkout(id); toast('✅ Excluído!'); allWorkouts=[]; loadWorkouts(); loadHomeWorkouts(); }
+  catch(e) { toast('Erro'); }
+}
+
+// ===== CHECK-IN =====
+window.doCheckIn = async function() {
+  try {
+    const ok = await checkIn(CU.uid, CU.name, '', 'Treino livre');
+    if (ok) { toast('✅ Presença registrada!'); loadHomeStats(); }
+    else toast('Presença já registrada hoje!');
+  } catch(e) { toast('Erro ao registrar presença'); }
+}
+
+window.checkInWithWk = async function(wkId, wkName) {
+  try {
+    const ok = await checkIn(CU.uid, CU.name, wkId, wkName);
+    if (ok) { toast('✅ Presença registrada!'); closeWkDetail(); loadHomeStats(); }
+    else toast('Presença já registrada hoje!');
+  } catch(e) { toast('Erro'); }
+}
+
+// ===== FREQUENCY =====
+async function loadFrequency() {
+  const c = document.getElementById('freqContent');
+  c.innerHTML = '<div class="loading"><div class="loading-spin"></div></div>';
+  try {
+    const now = new Date();
+    const month = now.toISOString().slice(0,7);
+    const checkins = await getCheckins(CU.uid, month);
+    const presentDates = new Set(checkins.map(x => x.date));
+    const year = now.getFullYear(), mon = now.getMonth();
+    const firstDay = new Date(year,mon,1).getDay();
+    const daysInMonth = new Date(year,mon+1,0).getDate();
+    const today = now.toISOString().split('T')[0];
+    const monthName = now.toLocaleDateString('pt-BR',{month:'long',year:'numeric'}).toUpperCase();
+    const workingDays = Math.ceil(daysInMonth*5/7);
+    const pct = Math.min(100, Math.round((presentDates.size/workingDays)*100));
+    let dHtml = '';
+    for(let i=0;i<firstDay;i++) dHtml+='<div class="fday fday-empty"></div>';
+    for(let d=1;d<=daysInMonth;d++){
+      const ds = year+'-'+String(mon+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      let cls = presentDates.has(ds)?'fday-ok':(ds===today?'fday-today':'fday-no');
+      dHtml+=`<div class="fday ${cls}">${d}</div>`;
+    }
+    c.innerHTML = `
+      <div class="freq-calendar">
+        <div class="freq-month">${monthName}</div>
+        <div class="freq-wdays"><div class="freq-wday">D</div><div class="freq-wday">S</div><div class="freq-wday">T</div><div class="freq-wday">Q</div><div class="freq-wday">Q</div><div class="freq-wday">S</div><div class="freq-wday">S</div></div>
+        <div class="freq-days">${dHtml}</div>
+        <div class="freq-summary">
+          <div><div class="freq-pct">${pct}%</div><div class="freq-label">frequência</div></div>
+          <div style="text-align:right"><div style="font-family:var(--fd);font-size:30px;color:white;">${presentDates.size}</div><div class="freq-label">presenças</div></div>
+        </div>
+      </div>
+      <div style="padding:0 12px 12px;">
+        <div style="font-family:var(--fd);font-size:17px;letter-spacing:1px;color:var(--yellow);margin-bottom:9px;">HISTÓRICO</div>
+        ${checkins.length?checkins.map(ci=>`
+          <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px;">
+            <div style="font-family:var(--fh);font-weight:700;color:var(--text);">${ci.date}</div>
+            <div style="color:var(--gray);">${ci.workoutName||'Treino livre'}</div>
+            <div style="color:var(--yellow);">✅</div>
+          </div>`).join('') : '<div style="color:var(--gray);font-size:13px;padding:10px 0;">Nenhuma presença registrada.</div>'}
+      </div>`;
+  } catch(e) { c.innerHTML = `<div style="padding:20px;color:var(--red);">${e.message}</div>`; }
+}
+
+// ===== EVOLUTION =====
+async function loadEvolution() {
+  const c = document.getElementById('evolutionList');
+  c.innerHTML = '<div class="loading"><div class="loading-spin"></div></div>';
+  try {
+    const loads = await getAllLoads(CU.uid);
+    allLoads = loads;
+    if (!loads.length) {
+      c.innerHTML = `<div class="empty-state"><span class="ei">📊</span><h3>SEM CARGAS</h3><p>Registre suas cargas para ver sua evolução.</p></div>`;
+      return;
+    }
+    const byEx = {};
+    loads.forEach(l => { if (!byEx[l.exerciseName]) byEx[l.exerciseName]=[]; byEx[l.exerciseName].push(l); });
+    c.innerHTML = Object.entries(byEx).map(([name, recs]) => {
+      const max = Math.max(...recs.map(r=>parseFloat(r.weight)||0));
+      return `<div class="evo-card">
+        <div class="evo-title">${name}<span class="evo-record">🏆 ${max}kg</span></div>
+        <div style="display:flex;flex-direction:column;">
+          ${recs.slice(0,5).map(r=>`
+            <div class="evo-row">
+              <div class="evo-date">${r.date||''}</div>
+              <div class="evo-load">${r.weight}kg</div>
+              <div class="evo-sets">${r.sets||''}</div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { c.innerHTML = `<div style="padding:20px;color:var(--red);">${e.message}</div>`; }
+}
+
+window.submitLoad = async function() {
+  const ex = document.getElementById('loadEx').value.trim();
+  const w = document.getElementById('loadWeight').value;
+  if (!ex || !w) { toast('Informe exercício e carga'); return; }
+  try {
+    await logLoad({
+      exerciseName: ex, weight: parseFloat(w),
+      sets: document.getElementById('loadSets').value.trim(),
+      date: document.getElementById('loadDate').value || new Date().toISOString().split('T')[0],
+      note: document.getElementById('loadNote').value.trim()
+    }, CU.uid);
+    closeModal('addLoadModal'); toast('✅ Carga registrada!');
+    allLoads=[]; loadEvolution();
+    ['loadEx','loadWeight','loadSets','loadNote'].forEach(id=>document.getElementById(id).value='');
+  } catch(e) { toast('Erro: ' + e.message); }
+}
+
+// ===== ASSESSMENT =====
+window.submitAssessment = async function() {
+  try {
+    await addAssessment({
+      date: document.getElementById('assessDate').value || new Date().toISOString().split('T')[0],
+      weight: document.getElementById('assessWeight').value,
+      height: document.getElementById('assessHeight').value,
+      fat: document.getElementById('assessFat').value,
+      muscle: document.getElementById('assessMuscle').value,
+      waist: document.getElementById('assessWaist').value,
+      hip: document.getElementById('assessHip').value,
+      arm: document.getElementById('assessArm').value,
+      thigh: document.getElementById('assessThigh').value,
+      notes: document.getElementById('assessNotes').value.trim()
+    }, CU.uid, CU.name);
+    closeModal('addAssessmentModal'); toast('✅ Avaliação salva!');
+    loadAssessHistory();
+  } catch(e) { toast('Erro: ' + e.message); }
+}
+
+window.confirmDelAssess = async function(id) {
+  if (!confirm('Excluir avaliação?')) return;
+  try { await deleteAssessment(id); toast('✅ Excluído!'); loadAssessHistory(); }
+  catch(e) { toast('Erro'); }
+}
+
+async function loadAssessHistory() {
+  const c = document.getElementById('assessHistory');
+  if (!CU) return;
+  try {
+    const list = await getAssessments(CU.uid);
+    if (!list.length) { c.innerHTML=''; return; }
+    c.innerHTML = `<div style="font-family:var(--fd);font-size:16px;letter-spacing:1px;color:var(--yellow);margin-bottom:9px;margin-top:8px;">AVALIAÇÕES FÍSICAS</div>` +
+      list.map(a=>`<div class="assess-card">
+        <div class="assess-date">${a.date}</div>
+        <div class="assess-grid">
+          ${a.weight?`<div class="assess-item"><div class="assess-item-label">Peso</div><div class="assess-item-val">${a.weight}kg</div></div>`:''}
+          ${a.fat?`<div class="assess-item"><div class="assess-item-label">% Gordura</div><div class="assess-item-val">${a.fat}%</div></div>`:''}
+          ${a.muscle?`<div class="assess-item"><div class="assess-item-label">% Músculo</div><div class="assess-item-val">${a.muscle}%</div></div>`:''}
+          ${a.waist?`<div class="assess-item"><div class="assess-item-label">Cintura</div><div class="assess-item-val">${a.waist}cm</div></div>`:''}
+          ${a.arm?`<div class="assess-item"><div class="assess-item-label">Braço</div><div class="assess-item-val">${a.arm}cm</div></div>`:''}
+          ${a.thigh?`<div class="assess-item"><div class="assess-item-label">Coxa</div><div class="assess-item-val">${a.thigh}cm</div></div>`:''}
+        </div>
+        ${a.notes?`<div style="font-size:12px;color:var(--gray);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">${a.notes}</div>`:''}
+        <div style="margin-top:9px;"><button class="btn-sm-red" onclick="confirmDelAssess('${a.id}')">🗑️ Excluir</button></div>
+      </div>`).join('');
+  } catch(e) { c.innerHTML=''; }
+}
+
+// ===== DIET =====
+window.openDiet = async function() {
+  openModal('dietModal');
+  await loadDietView();
+}
+
+async function loadDietView() {
+  const c = document.getElementById('dietView');
+  try {
+    const plan = await getDietPlan(CU.uid);
+    if (!plan) { c.innerHTML='<div style="color:var(--gray);font-size:13px;padding:14px 0;">Nenhum plano cadastrado ainda.</div>'; return; }
+    c.innerHTML = `<div style="display:flex;flex-direction:column;gap:9px;margin-bottom:12px;">
+      <div style="background:var(--dark2);border:1px solid var(--border);padding:11px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
+        <div><div style="font-family:var(--fd);font-size:26px;color:var(--yellow);">${plan.calories||'—'}</div><div style="font-family:var(--fh);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--gray);">Kcal</div></div>
+        <div><div style="font-family:var(--fd);font-size:26px;color:var(--yellow);">${plan.protein||'—'}g</div><div style="font-family:var(--fh);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--gray);">Proteína</div></div>
+        <div><div style="font-family:var(--fd);font-size:26px;color:var(--yellow);">${plan.carbs||'—'}g</div><div style="font-family:var(--fh);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--gray);">Carbs</div></div>
+      </div>
+      ${plan.notes?`<div style="background:var(--dark2);border:1px solid var(--border);padding:11px;font-size:13px;color:var(--gray);line-height:1.6;">${plan.notes}</div>`:''}
+      ${plan.meals?`<div style="background:var(--dark2);border:1px solid var(--border);padding:11px;"><div style="font-family:var(--fh);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--yellow);margin-bottom:7px;">REFEIÇÕES</div><pre style="font-size:12px;color:var(--gray);line-height:1.7;white-space:pre-wrap;">${plan.meals}</pre></div>`:''}
+    </div>`;
+  } catch(e) { c.innerHTML='<div style="color:var(--red);font-size:13px;">Erro ao carregar.</div>'; }
+}
+
+window.showDietEdit = async function() {
+  const plan = await getDietPlan(CU.uid) || {};
+  document.getElementById('dietCal').value=plan.calories||'';
+  document.getElementById('dietProt').value=plan.protein||'';
+  document.getElementById('dietCarb').value=plan.carbs||'';
+  document.getElementById('dietFat').value=plan.fat||'';
+  document.getElementById('dietNotes').value=plan.notes||'';
+  document.getElementById('dietMeals').value=plan.meals||'';
+  document.getElementById('dietView').style.display='none';
+  document.getElementById('dietEditBtn').style.display='none';
+  document.getElementById('dietEditForm').style.display='flex';
+}
+window.closeDietEdit = function() {
+  document.getElementById('dietView').style.display='block';
+  document.getElementById('dietEditBtn').style.display='block';
+  document.getElementById('dietEditForm').style.display='none';
+}
+window.submitDiet = async function() {
+  try {
+    await saveDietPlan(CU.uid,{
+      calories:document.getElementById('dietCal').value,
+      protein:document.getElementById('dietProt').value,
+      carbs:document.getElementById('dietCarb').value,
+      fat:document.getElementById('dietFat').value,
+      notes:document.getElementById('dietNotes').value.trim(),
+      meals:document.getElementById('dietMeals').value.trim()
+    });
+    closeDietEdit(); toast('✅ Plano alimentar salvo!'); loadDietView();
+  } catch(e) { toast('Erro'); }
+}
+
+// ===== PROFILE =====
+function renderProfile() {
+  if (!CU) return;
+  document.getElementById('welcomeName').textContent = (CU.name||'ATLETA').split(' ')[0].toUpperCase();
+}
+
+function renderProfileTab() {
+  if (!CU) return;
+  document.getElementById('profAvatar').textContent = (CU.name||'F')[0].toUpperCase();
+  document.getElementById('profName').textContent = CU.name||'';
+  document.getElementById('profRole').textContent = CU.role==='personal'?'PERSONAL TRAINER':(CU.isAdmin?'ADMINISTRADOR':'ALUNO');
+  document.getElementById('profCity').textContent = [CU.city,CU.state].filter(Boolean).join(' · ');
+  const exp = CU.expirationDate?.toDate?.();
+  document.getElementById('profExpiry').textContent = exp ? exp.toLocaleDateString('pt-BR') : '—';
+  loadAssessHistory();
+}
+
+window.openEditProfile = function() {
+  document.getElementById('epName').value=CU.name||'';
+  document.getElementById('epPhone').value=CU.phone||'';
+  document.getElementById('epCity').value=CU.city||'';
+  document.getElementById('epState').value=CU.state||'';
+  document.getElementById('epGoal').value=CU.goal||'Hipertrofia';
+  document.getElementById('epLevel').value=CU.level||'Iniciante';
+  openModal('editProfileModal');
+}
+
+window.submitEditProfile = async function() {
+  try {
+    const data = {
+      name:document.getElementById('epName').value.trim(),
+      phone:document.getElementById('epPhone').value.trim(),
+      city:document.getElementById('epCity').value.trim(),
+      state:document.getElementById('epState').value.trim(),
+      goal:document.getElementById('epGoal').value,
+      level:document.getElementById('epLevel').value
+    };
+    await updateUserProfile(CU.uid,data);
+    Object.assign(CU,data);
+    closeModal('editProfileModal'); toast('✅ Perfil atualizado!');
+    renderProfile(); renderProfileTab();
+  } catch(e) { toast('Erro'); }
+}
+
+// ===== FEED =====
+async function loadFeed() {
+  const c = document.getElementById('feedList');
+  c.innerHTML = '<div class="loading"><div class="loading-spin"></div></div>';
+  try {
+    const items = await getAnnouncements(30);
+    allAnnouncements = items;
+    renderFeed('');
+  } catch(e) { c.innerHTML=`<div style="padding:20px;color:var(--red);">${e.message}</div>`; }
+}
+
+function renderFeed(cat) {
+  const c = document.getElementById('feedList');
+  const items = cat ? allAnnouncements.filter(a=>a.category===cat) : allAnnouncements;
+  if (!items.length) { c.innerHTML=`<div class="empty-state"><span class="ei">📢</span><h3>SEM COMUNICADOS</h3><p>Nenhum comunicado ainda.</p></div>`; return; }
+  c.innerHTML = items.map(a=>renderAnnCard(a)).join('');
+}
+
+window.filterFeed = function(cat,el) {
+  document.querySelectorAll('#tab-feed .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderFeed(cat);
+}
+
+window.handleLike = async function(id) {
+  try { await toggleAnnounceLike(id,CU.uid); allAnnouncements=[]; loadFeed(); loadHomeAnnouncements(); }
+  catch(e) { toast('Erro'); }
+}
+
+window.submitAnnouncement = async function() {
+  const content = document.getElementById('annContent').value.trim();
+  if (!content) { toast('Escreva o comunicado'); return; }
+  try {
+    await createAnnouncement(content,document.getElementById('annCat').value,CU.uid,CU.name);
+    closeModal('createAnnounceModal');
+    document.getElementById('annContent').value='';
+    toast('✅ Publicado!');
+    allAnnouncements=[]; loadFeed(); loadHomeAnnouncements();
+  } catch(e) { toast('Erro'); }
+}
+
+window.delAnn = async function(id) {
+  if (!confirm('Excluir comunicado?')) return;
+  try { await deleteItem('fz_announcements',id); toast('✅ Excluído!'); allAnnouncements=[]; loadFeed(); }
+  catch(e) { toast('Erro'); }
+}
+
+// ===== DELETE ACCOUNT =====
+window.deleteMyAccount = async function() {
+  if (!confirm('Excluir conta permanentemente? Esta ação não pode ser desfeita.')) return;
+  try {
+    await deleteItem('fz_users',CU.uid);
+    await logoutUser(); show('login');
+  } catch(e) { toast('Erro ao excluir conta'); }
+}
+
+// ===== ADMIN =====
+async function loadAdmin() {
+  try {
+    const stats = await getAdminStats();
+    document.getElementById('adminTotal').textContent=stats.total;
+    document.getElementById('adminActive').textContent=stats.active;
+    document.getElementById('adminExpiring').textContent=stats.expiring;
+    document.getElementById('adminExpired').textContent=stats.expired;
+    allAdminUsers = await getAllUsers();
+    renderAdminUsers();
+  } catch(e) { toast('Erro ao carregar admin: ' + e.message); }
+}
+
+window.setAdminTab = function(tab,el) {
+  curAdminTab=tab;
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderAdminUsers();
+}
+
+window.renderAdminUsers = function() {
+  const search = document.getElementById('adminSearch').value.toLowerCase();
+  const now = Date.now();
+  const filtered = allAdminUsers.filter(u => {
+    if (search && !u.name?.toLowerCase().includes(search) && !u.email?.toLowerCase().includes(search)) return false;
+    const exp = u.expirationDate?.toDate?.();
+    const days = exp ? (exp-now)/(1000*60*60*24) : 0;
+    if (curAdminTab==='active') return u.isActive && days>7;
+    if (curAdminTab==='expiring') return u.isActive && days>=0 && days<=7;
+    if (curAdminTab==='expired') return days<0;
+    if (curAdminTab==='blocked') return !u.isActive;
+    return true;
+  });
+  const c = document.getElementById('adminUsersList');
+  if (!filtered.length) { c.innerHTML=`<div class="empty-state"><h3>NENHUM USUÁRIO</h3></div>`; return; }
+  c.innerHTML = filtered.map(u => {
+    const exp = u.expirationDate?.toDate?.();
+    const days = exp ? Math.floor((exp-now)/(1000*60*60*24)) : 0;
+    let badge='Ativo',bc='badge-active';
+    if (!u.isActive){badge='Bloqueado';bc='badge-blocked';}
+    else if(days<0){badge='Expirado';bc='badge-expired';}
+    else if(days<=7){badge=days+'d';bc='badge-expiring';}
+    return `<div class="user-card">
+      <div class="user-card-top">
+        <div class="user-avatar">${(u.name||'?')[0].toUpperCase()}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="user-name">${u.name||'—'} <span style="font-size:10px;color:var(--gray);font-family:var(--fh);font-weight:400;">${u.role||'aluno'}</span></div>
+          <div class="user-email">${u.email} · ${u.city||''}</div>
+          <div class="user-email">💪 ${u.totalWorkouts||0} treinos · ${u.goal||''} · ${u.level||''}</div>
+        </div>
+        <span class="badge ${bc}">${badge}</span>
+      </div>
+      <div style="font-size:11px;color:var(--gray2);margin-bottom:7px;">Expira: ${exp?exp.toLocaleDateString('pt-BR'):'—'}${u.phone?' · 📱 '+u.phone:''}</div>
+      <div class="user-card-footer">
+        <button class="user-btn ubtn-renew" onclick="openRenew('${u.uid}','${(u.name||'').replace(/'/g,'')}')">🔄 Renovar</button>
+        <button class="user-btn ubtn-block" onclick="blockUser('${u.uid}',${u.isActive},'${(u.name||'').replace(/'/g,'')}')">
+          ${u.isActive?'🚫 Bloquear':'✅ Ativar'}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.openRenew = function(uid,name) {
+  document.getElementById('renewUid').value=uid;
+  document.getElementById('renewName').value=name;
+  openModal('renewModal');
+}
+window.submitRenew = async function() {
+  const uid = document.getElementById('renewUid').value;
+  const days = parseInt(document.getElementById('renewDays').value);
+  try { await renewAccess(uid,days); closeModal('renewModal'); toast('✅ Acesso renovado!'); loadAdmin(); }
+  catch(e) { toast('Erro'); }
+}
+window.blockUser = async function(uid,isActive,name) {
+  if (!confirm((isActive?'Bloquear ':'Ativar ')+name+'?')) return;
+  try { await toggleUserActive(uid,!isActive); toast('✅ OK!'); loadAdmin(); }
+  catch(e) { toast('Erro'); }
+}
+
+// INIT default dates
+document.getElementById('loadDate').value = new Date().toISOString().split('T')[0];
+document.getElementById('assessDate').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>

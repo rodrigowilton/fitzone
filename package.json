@@ -1,0 +1,25 @@
+{
+  "name": "fitzone",
+  "version": "1.0.0",
+  "description": "FitZone - Academia e Treinos",
+  "scripts": {
+    "start": "npx serve src -p 3000",
+    "build": "npx copyfiles -u 1 \"src/**/*\" dist",
+    "cap:sync": "npx cap sync android",
+    "cap:open": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/haptics": "^6.0.0",
+    "@capacitor/keyboard": "^6.0.0",
+    "@capacitor/splash-screen": "^6.0.0",
+    "@capacitor/status-bar": "^6.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0",
+    "copyfiles": "^2.4.1",
+    "serve": "^14.2.0"
+  }
+}
