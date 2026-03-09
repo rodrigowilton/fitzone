@@ -16,7 +16,6 @@ import {
   increment, arrayUnion, arrayRemove
 } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
-// 🔑 Configurações do seu projeto Firebase "fitzone"
 const firebaseConfig = {
   apiKey: "AIzaSyA-9Htb5wI1k3NXyK12T8ceMWtvF-NuoSs",
   authDomain: "fitzone-8719f.firebaseapp.com",
@@ -25,6 +24,7 @@ const firebaseConfig = {
   messagingSenderId: "264831726073",
   appId: "1:264831726073:web:e7a20ada0dd645d1e5cd28"
 };
+
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
