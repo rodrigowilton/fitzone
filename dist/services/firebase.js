@@ -40,13 +40,13 @@ export async function registerUser(data) {
   const user = {
     uid, name, email,
     phone: phone || '', city: city || '', state: state || '',
-    role: role || 'aluno',       // 'aluno' | 'personal' | 'admin'
+    role: role || 'aluno',       // 'aluno' | 'personal' | 'nutri' | 'admin'
     goal: goal || 'Hipertrofia',
     level: level || 'Iniciante',
     registrationDate: Timestamp.fromDate(now),
     expirationDate: Timestamp.fromDate(expiry),
     isActive: true, isAdmin: false, isExpired: false,
-    totalWorkouts: 0, personalUid: '', personalName: ''
+    totalWorkouts: 0, personalUid: '', personalName: '', nutriUid: '', nutriName: ''
   };
   await setDoc(doc(db, 'fz_users', uid), user);
   await addDoc(collection(db, 'fz_notifications'), {
@@ -249,6 +249,29 @@ export async function linkStudentToPersonal(studentUid, personalUid, personalNam
 
 export async function unlinkStudent(studentUid) {
   await updateDoc(doc(db, 'fz_users', studentUid), { personalUid: '', personalName: '' });
+}
+
+// ===================== NUTRICIONISTA (alunos vinculados) =====================
+export async function getStudentsByNutri(nutriUid) {
+  const q = query(collection(db, 'fz_users'), where('nutriUid', '==', nutriUid));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ ...d.data() }))
+    .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+}
+
+export async function linkStudentToNutri(studentUid, nutriUid, nutriName) {
+  // merge:true garante que funciona mesmo em docs que não tinham o campo nutriUid
+  await setDoc(doc(db, 'fz_users', studentUid), { nutriUid, nutriName }, { merge: true });
+  await addDoc(collection(db, 'fz_notifications'), {
+    userId: studentUid,
+    title: '🥗 Nutricionista vinculada!',
+    message: nutriName + ' é agora sua nutricionista no FitZone.',
+    read: false, createdAt: serverTimestamp()
+  });
+}
+
+export async function unlinkStudentFromNutri(studentUid) {
+  await updateDoc(doc(db, 'fz_users', studentUid), { nutriUid: '', nutriName: '' });
 }
 
 // ===================== MENSAGENS =====================

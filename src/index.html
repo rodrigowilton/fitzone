@@ -280,6 +280,7 @@
         <select id="regRole" class="form-select">
           <option value="aluno">🏃 Aluno</option>
           <option value="personal">💪 Personal Trainer</option>
+          <option value="nutri">🥗 Nutricionista</option>
         </select></div>
       <div class="form-group"><label class="form-label">Objetivo</label>
         <select id="regGoal" class="form-select">
@@ -328,7 +329,7 @@
         <div class="home-top-row">
           <div>
             <div class="home-greeting">OLÁ, <span id="welcomeName">ATLETA</span>!</div>
-            <div style="font-family:var(--fh);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--gray);margin-top:1px;">Vamos treinar hoje?</div>
+            <div style="font-family:var(--fh);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--gray);margin-top:1px;" id="homeSubGreet">Vamos treinar hoje?</div>
           </div>
           <div class="role-badge" id="homeRoleBadge">ALUNO</div>
         </div>
@@ -414,8 +415,8 @@
     <div id="tab-students" class="tab-page">
       <div class="page-header">
         <div class="page-header-row">
-          <div><div class="page-title">ALUNOS</div><div class="page-sub" id="studentsSubtitle">Meus alunos</div></div>
-          <button class="btn-add" onclick="openModal('linkStudentModal')"><i class="fa-solid fa-user-plus"></i> Vincular</button>
+          <div><div class="page-title" id="studentsTabTitle">ALUNOS</div><div class="page-sub" id="studentsSubtitle">Meus alunos</div></div>
+          <button class="btn-add" onclick="openLinkStudentModal()"><i class="fa-solid fa-user-plus"></i> Vincular</button>
         </div>
       </div>
       <!-- Busca rápida -->
@@ -446,6 +447,7 @@
         <div class="prof-avatar" id="profAvatar">F</div>
         <div class="prof-name" id="profName">—</div>
         <div class="prof-role" id="profRole">ALUNO</div>
+          <div id="profLinks"></div>
         <div class="prof-city" id="profCity"></div>
       </div>
       <div class="expiry-card">
@@ -458,12 +460,12 @@
           <div><div class="menu-title">Editar Perfil</div><div class="menu-sub">Nome, objetivo, nível</div></div>
           <i class="fa-solid fa-chevron-right menu-arrow"></i>
         </div>
-        <div class="menu-item" onclick="openModal('addAssessmentModal')">
+        <div class="menu-item" id="menuItemAssessment" onclick="openModal('addAssessmentModal')">
           <div class="menu-ico"><i class="fa-solid fa-ruler"></i></div>
           <div><div class="menu-title">Avaliação Física</div><div class="menu-sub">Medidas e composição</div></div>
           <i class="fa-solid fa-chevron-right menu-arrow"></i>
         </div>
-        <div class="menu-item" onclick="openDiet()">
+        <div class="menu-item" id="menuItemDiet" onclick="openDiet()">
           <div class="menu-ico"><i class="fa-solid fa-apple-whole"></i></div>
           <div><div class="menu-title">Plano Alimentar</div><div class="menu-sub">Calorias e macros</div></div>
           <i class="fa-solid fa-chevron-right menu-arrow"></i>
@@ -485,9 +487,9 @@
   </div><!-- end app-content -->
 
   <div class="bottom-nav">
-    <button class="nav-item active" id="nav-home" onclick="switchTab('home')"><i class="fa-solid fa-house"></i><span>Home</span></button>
+    <button class="nav-item active" id="nav-home" onclick="switchTab('home')"><i class="fa-solid fa-house"></i><span id="navHomeTxt">Home</span></button>
     <button class="nav-item" id="nav-workouts" onclick="switchTab('workouts')"><i class="fa-solid fa-dumbbell"></i><span>Treinos</span></button>
-    <button class="nav-item" id="nav-students" onclick="switchTab('students')" style="display:none;"><i class="fa-solid fa-users"></i><span>Alunos</span></button>
+    <button class="nav-item" id="nav-students" onclick="switchTab('students')" style="display:none;"><i class="fa-solid fa-users"></i><span id="navStudentsTxt">Alunos</span></button>
     <button class="nav-item" id="nav-frequency" onclick="switchTab('frequency')"><i class="fa-solid fa-calendar-check"></i><span>Freq.</span></button>
     <button class="nav-item" id="nav-messages" onclick="switchTab('messages')" style="position:relative;"><i class="fa-solid fa-envelope"></i><span id="navMsgTxt">Msgs</span><span id="msgBadge" style="display:none;position:absolute;top:5px;right:8px;background:var(--red);color:white;font-size:9px;font-weight:700;font-family:var(--fh);min-width:15px;height:15px;border-radius:8px;align-items:center;justify-content:center;padding:0 3px;"></span></button>
     <button class="nav-item" id="nav-feed" onclick="switchTab('feed')"><i class="fa-solid fa-bullhorn"></i><span>Feed</span></button>
@@ -615,6 +617,70 @@
       <div class="form-group"><label class="form-label">Observações</label><textarea id="assessNotes" class="form-textarea" rows="2"></textarea></div>
       <button class="btn-primary" onclick="submitAssessment()">SALVAR AVALIAÇÃO</button>
       <button class="btn-outline" onclick="closeModal('addAssessmentModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- LINK NUTRI MODAL -->
+<div id="linkNutriModal" class="modal-ov">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🥗 VINCULAR PACIENTE</div>
+    <p style="font-size:13px;color:var(--gray);margin-bottom:12px;">Busque pelo e-mail cadastrado no FitZone.</p>
+    <input id="linkNutriEmail" class="form-input" type="email" placeholder="E-mail do paciente" style="margin-bottom:8px;"/>
+    <button class="btn-primary" onclick="searchNutriStudentByEmail()">🔍 Buscar</button>
+    <div id="linkNutriResult" style="display:none;margin-top:12px;padding:12px;background:rgba(255,255,255,.05);border-radius:12px;">
+      <div class="user-name" id="linkNutriInfo" style="font-size:14px;"></div>
+      <div class="user-email" id="linkNutriMeta" style="font-size:12px;margin-top:3px;"></div>
+    </div>
+    <div id="linkNutriNotFound" style="display:none;color:var(--red);font-size:13px;margin-top:8px;">❌ Usuário não encontrado.</div>
+    <button id="btnConfirmNutriLink" class="btn-primary" style="display:none;margin-top:12px;background:#4caf50;" onclick="confirmLinkNutriStudent()">✅ VINCULAR PACIENTE</button>
+    <button class="btn-outline" onclick="closeModal('linkNutriModal')" style="margin-top:8px;">Cancelar</button>
+  </div>
+</div>
+
+<!-- MEDIDAS DO PACIENTE (visão nutricionista) -->
+<div id="nutriMeasuresModal" class="modal-ov">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📏 MEDIDAS</div>
+    <div class="modal-sub" id="nutriMeasuresName" style="margin-bottom:12px;font-size:13px;color:var(--gray);"></div>
+    <div id="nutriMeasuresList" style="max-height:260px;overflow-y:auto;"></div>
+
+    <!-- Form adicionar/editar medida pela nutri -->
+    <div id="nutriAddMeasureForm" style="display:none;margin-top:12px;border-top:1px solid rgba(255,255,255,.08);padding-top:12px;">
+      <div style="font-family:var(--fh);font-size:11px;color:var(--yellow);letter-spacing:1px;margin-bottom:10px;">NOVA AVALIAÇÃO</div>
+      <input type="hidden" id="nutriMeasureTargetUid"/>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;"><label class="form-label">Data</label><input type="date" id="nAssessDate" class="form-input"/></div>
+          <div style="flex:1;"><label class="form-label">Peso (kg)</label><input type="number" step="0.1" id="nAssessWeight" class="form-input" placeholder="75.5"/></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;"><label class="form-label">Altura (cm)</label><input type="number" id="nAssessHeight" class="form-input" placeholder="175"/></div>
+          <div style="flex:1;"><label class="form-label">% Gordura</label><input type="number" step="0.1" id="nAssessFat" class="form-input" placeholder="18.5"/></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;"><label class="form-label">% Músculo</label><input type="number" step="0.1" id="nAssessMuscle" class="form-input" placeholder="42"/></div>
+          <div style="flex:1;"><label class="form-label">Cintura (cm)</label><input type="number" step="0.5" id="nAssessWaist" class="form-input" placeholder="80"/></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;"><label class="form-label">Quadril (cm)</label><input type="number" step="0.5" id="nAssessHip" class="form-input" placeholder="95"/></div>
+          <div style="flex:1;"><label class="form-label">Braço (cm)</label><input type="number" step="0.5" id="nAssessArm" class="form-input" placeholder="38"/></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;"><label class="form-label">Coxa (cm)</label><input type="number" step="0.5" id="nAssessThigh" class="form-input" placeholder="58"/></div>
+          <div style="flex:1;"><label class="form-label">Panturrilha</label><input type="number" step="0.5" id="nAssessCalf" class="form-input" placeholder="36"/></div>
+        </div>
+        <div><label class="form-label">Observações</label><textarea id="nAssessNotes" class="form-textarea" rows="2"></textarea></div>
+        <button class="btn-primary" style="background:#4caf50;" onclick="submitNutriMeasure()">💾 SALVAR AVALIAÇÃO</button>
+        <button class="btn-outline" onclick="document.getElementById('nutriAddMeasureForm').style.display='none'">Cancelar</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn-primary" style="flex:1;background:#4caf50;font-size:12px;" onclick="document.getElementById('nutriAddMeasureForm').style.display='flex';document.getElementById('nutriAddMeasureForm').style.flexDirection='column'">➕ Nova Avaliação</button>
+      <button class="btn-outline" style="flex:1;font-size:12px;" onclick="closeModal('nutriMeasuresModal')">Fechar</button>
     </div>
   </div>
 </div>
@@ -831,6 +897,7 @@ import {
   getAnnouncements, createAnnouncement, toggleAnnounceLike,
   getAllUsers, toggleUserActive, renewAccess, getAdminStats,
   getStudentsByPersonal, findUserByEmail, linkStudentToPersonal, unlinkStudent,
+  getStudentsByNutri, linkStudentToNutri, unlinkStudentFromNutri,
   sendMessageToStudent, sendMessageToAll, getMyMessages, getSentMessages, markMessageRead, countUnreadMessages,
   deleteItem, updateItem, Timestamp
 } from './services/firebase.js';
@@ -868,6 +935,8 @@ function timeAgo(ts) {
   return Math.floor(s/86400) + 'd';
 }
 function isProf() { return CU?.isAdmin || CU?.role === 'personal'; }
+function isNutri() { return CU?.role === 'nutri'; }
+function isProfOrNutri() { return isProf() || isNutri(); }
 
 // ===== AUTH FLOW =====
 onAuthStateChanged(auth, async (fu) => {
@@ -952,6 +1021,41 @@ window.openWA = function() { window.open('https://wa.me/5527992734399?text=Quero
 
 // ===== INIT =====
 function initApp() {
+  if (isNutri()) {
+    // Nutri só vê: Home | Pacientes | Msgs | Perfil
+    document.getElementById('nav-workouts').style.display  = 'none';
+    document.getElementById('nav-frequency').style.display = 'none';
+    document.getElementById('nav-feed').style.display      = 'none';
+    document.getElementById('nav-students').style.display  = 'flex';
+    document.getElementById('btnNewMsg').style.display     = 'flex';
+    // Ocultar Home da nav e mudar label Alunos → Pacientes
+    document.getElementById('nav-home').style.display = 'none';
+    const nst = document.getElementById('navStudentsTxt');
+    if (nst) nst.textContent = 'Pacientes';
+    // Ajustar home para nutri
+    const hsg = document.getElementById('homeSubGreet');
+    if (hsg) hsg.textContent = 'Gerencie seus pacientes';
+    document.getElementById('homeWorkoutPreview').closest('.sec-row')
+      && (document.getElementById('homeWorkoutPreview').previousElementSibling.style.display = 'none');
+    document.getElementById('homeWorkoutPreview').style.display = 'none';
+    const checkinBtn = document.querySelector('#tab-home .btn-primary');
+    if (checkinBtn) checkinBtn.closest('div').style.display = 'none';
+    const feedRow = document.getElementById('homeAnnouncePreview');
+    if (feedRow) {
+      feedRow.style.display = 'none';
+      feedRow.previousElementSibling && (feedRow.previousElementSibling.style.display = 'none');
+    }
+    // Ocultar avaliação e dieta do perfil da própria nutri
+    const miA = document.getElementById('menuItemAssessment');
+    const miD = document.getElementById('menuItemDiet');
+    if (miA) miA.style.display = 'none';
+    if (miD) miD.style.display = 'none';
+    // Ocultar histórico de avaliações
+    const ah = document.getElementById('assessHistory');
+    if (ah) ah.style.display = 'none';
+    // Nutri começa direto na aba Pacientes
+    setTimeout(() => switchTab('students'), 50);
+  }
   if (isProf()) {
     document.getElementById('btnAddWorkout').style.display = 'flex';
     document.getElementById('btnAddAnnounce').style.display = 'flex';
@@ -966,6 +1070,8 @@ function initApp() {
 }
 
 function switchTab(tab) {
+  // Nutri só pode acessar: home, students, messages, profile
+  if (isNutri() && !['home','students','messages','profile'].includes(tab)) return;
   document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
@@ -987,8 +1093,14 @@ async function loadHomeStats() {
   try {
     const first = (CU.name || 'ATLETA').split(' ')[0].toUpperCase();
     document.getElementById('welcomeName').textContent = first;
-    document.getElementById('homeRoleBadge').textContent = CU.role === 'personal' ? 'PERSONAL' : 'ALUNO';
-    document.getElementById('statWorkouts').textContent = CU.totalWorkouts || 0;
+    document.getElementById('homeRoleBadge').textContent = CU.role === 'personal' ? 'PERSONAL' : (CU.role === 'nutri' ? 'NUTRICIONISTA' : 'ALUNO');
+    if (isNutri()) {
+      // Nutri: stat boxes mostram pacientes vinculados
+      document.getElementById('statWorkouts').textContent = '—';
+      document.getElementById('statFreq').textContent = '—';
+    } else {
+      document.getElementById('statWorkouts').textContent = CU.totalWorkouts || 0;
+    }
     const expiry = CU.expirationDate?.toDate?.();
     const daysLeft = expiry ? Math.max(0, Math.floor((expiry - Date.now()) / 86400000)) : 0;
     document.getElementById('statDays').textContent = daysLeft;
@@ -1345,7 +1457,7 @@ async function loadDietView(targetUid) {
   const uid = targetUid || CU.uid;
   const c = document.getElementById('dietView');
   const editBtn = document.getElementById('dietEditBtn');
-  if (editBtn) editBtn.style.display = isProf() ? 'block' : 'none';
+  if (editBtn) editBtn.style.display = (isProf() || isNutri()) ? 'block' : 'none';
   try {
     const plan = await getDietPlan(uid);
     if (!plan) { c.innerHTML='<div style="color:var(--gray);font-size:13px;padding:14px 0;">Nenhum plano cadastrado ainda.</div>'; return; }
@@ -1404,7 +1516,14 @@ function renderProfileTab() {
   if (!CU) return;
   document.getElementById('profAvatar').textContent = (CU.name||'F')[0].toUpperCase();
   document.getElementById('profName').textContent = CU.name||'';
-  document.getElementById('profRole').textContent = CU.role==='personal'?'PERSONAL TRAINER':(CU.isAdmin?'ADMINISTRADOR':'ALUNO');
+  document.getElementById('profRole').textContent = CU.role==='personal'?'PERSONAL TRAINER':(CU.role==='nutri'?'NUTRICIONISTA':(CU.isAdmin?'ADMINISTRADOR':'ALUNO'));
+  const profLinks = document.getElementById('profLinks');
+  if (profLinks) {
+    let lh = '';
+    if (CU.personalName) lh += '<div style="font-size:12px;color:var(--gray);margin-top:4px;">💪 Personal: <span style="color:var(--yellow);">' + CU.personalName + '</span></div>';
+    if (CU.nutriName)    lh += '<div style="font-size:12px;color:var(--gray);margin-top:2px;">🥗 Nutricionista: <span style="color:#4caf50;">' + CU.nutriName + '</span></div>';
+    profLinks.innerHTML = lh;
+  }
   document.getElementById('profCity').textContent = [CU.city,CU.state].filter(Boolean).join(' · ');
   const exp = CU.expirationDate?.toDate?.();
   document.getElementById('profExpiry').textContent = exp ? exp.toLocaleDateString('pt-BR') : '—';
@@ -1577,12 +1696,19 @@ window.blockUser = async function(uid,isActive,name) {
 
 
 // ===== STUDENTS (personal) =====
+window.openLinkStudentModal = function() {
+  if (isNutri()) openModal('linkNutriModal');
+  else openModal('linkStudentModal');
+}
+
 async function loadStudents() {
   const c = document.getElementById('studentsList');
   c.innerHTML = '<div class="loading"><div class="loading-spin"></div></div>';
   try {
-    myStudents = await getStudentsByPersonal(CU.uid);
-    document.getElementById('studentsSubtitle').textContent = myStudents.length + ' alunos vinculados';
+    myStudents = isNutri() ? await getStudentsByNutri(CU.uid) : await getStudentsByPersonal(CU.uid);
+    const stt = document.getElementById('studentsTabTitle');
+    if (stt) stt.textContent = isNutri() ? 'PACIENTES' : 'ALUNOS';
+    document.getElementById('studentsSubtitle').textContent = myStudents.length + (isNutri() ? ' pacientes vinculados' : ' alunos vinculados');
     renderStudentsList();
   } catch(e) { c.innerHTML = '<div style="padding:20px;color:var(--red);">' + e.message + '</div>'; }
 }
@@ -1613,17 +1739,125 @@ window.renderStudentsList = function() {
         '<div style="font-family:var(--fd);font-size:14px;color:' + expColor + ';">' + (days < 0 ? 'Expirado' : days + 'd') + '</div>' +
       '</div>' +
       '<div class="user-card-footer">' +
-        '<button class="user-btn" style="color:var(--yellow);" data-uid="' + s.uid + '" data-name="' + (s.name||'').replace(/"/g,'') + '" onclick="openAssignWorkout(this.dataset.uid,this.dataset.name)">🏋️ Treinos</button>' +
-        '<button class="user-btn" style="color:#4caf50;" data-uid="' + s.uid + '" data-name="' + (s.name||'').replace(/"/g,'') + '" onclick="openDietForStudent(this.dataset.uid,this.dataset.name)">🥗 Dieta</button>' +
-        '<button class="user-btn" style="color:var(--blue);" data-uid="' + s.uid + '" data-name="' + (s.name||'').replace(/"/g,'') + '" onclick="openMsgStudent(this.dataset.uid,this.dataset.name)">💬 Mensagem</button>' +
-        '<button class="user-btn" style="color:var(--red);" data-uid="' + s.uid + '" data-name="' + (s.name||'').replace(/"/g,'') + '" onclick="confirmUnlink(this.dataset.uid,this.dataset.name)">🔗 Desvincular</button>' +
+        (isNutri()
+        ? '<button class="user-btn" style="color:#4caf50;" data-uid="' + s.uid + '" data-name="' + (s.name||'').replace(/"/g,'') + '" onclick="openDietForStudent(this.dataset.uid,this.dataset.name)">🥗 Dieta</button>' +
+          '<button class="user-btn" style="color:var(--yellow);" data-uid="' + s.uid + '" data-name="' + (s.name||'').replace(/"/g,'') + '" onclick="openNutriMeasures(this.dataset.uid,this.dataset.name)">📏 Medidas</button>' +
+          '<button class="user-btn" style="color:var(--blue);" data-uid="' + s.uid + '" data-name="' + (s.name||'').replace(/"/g,'') + '" onclick="openMsgStudent(this.dataset.uid,this.dataset.name)">💬 Mensagem</button>' +
+          '<button class="user-btn" style="color:var(--red);" data-uid="' + s.uid + '" data-name="' + (s.name||'').replace(/"/g,'') + '" onclick="confirmUnlinkNutri(this.dataset.uid,this.dataset.name)">🔗 Desvincular</button>'
+        : '<button class="user-btn" style="color:var(--yellow);" data-uid="' + s.uid + '" data-name="' + (s.name||'').replace(/"/g,'') + '" onclick="openAssignWorkout(this.dataset.uid,this.dataset.name)">🏋️ Treinos</button>' +
+          '<button class="user-btn" style="color:#4caf50;" data-uid="' + s.uid + '" data-name="' + (s.name||'').replace(/"/g,'') + '" onclick="openDietForStudent(this.dataset.uid,this.dataset.name)">🥗 Dieta</button>' +
+          '<button class="user-btn" style="color:var(--blue);" data-uid="' + s.uid + '" data-name="' + (s.name||'').replace(/"/g,'') + '" onclick="openMsgStudent(this.dataset.uid,this.dataset.name)">💬 Mensagem</button>' +
+          '<button class="user-btn" style="color:var(--red);" data-uid="' + s.uid + '" data-name="' + (s.name||'').replace(/"/g,'') + '" onclick="confirmUnlink(this.dataset.uid,this.dataset.name)">🔗 Desvincular</button>'
+        ) +
       '</div>' +
     '</div>';
   }).join('') +
   // Botão mensagem geral no final
   '<div style="padding:12px;">' +
-    '<button class="btn-outline" style="color:var(--yellow);border-color:rgba(255,214,0,.3);" onclick="openMsgAll()">📢 ENVIAR MENSAGEM PARA TODOS OS ALUNOS</button>' +
+    '<button class="btn-outline" style="color:var(--yellow);border-color:rgba(255,214,0,.3);" onclick="openMsgAll()">📢 ENVIAR MENSAGEM PARA TODOS</button>' +
   '</div>';
+}
+
+// ── Nutricionista: vincular / desvincular / medidas ──
+let foundNutriStudent = null;
+
+window.searchNutriStudentByEmail = async function() {
+  const email = document.getElementById('linkNutriEmail').value.trim();
+  if (!email) { toast('Informe o e-mail'); return; }
+  document.getElementById('linkNutriResult').style.display = 'none';
+  document.getElementById('linkNutriNotFound').style.display = 'none';
+  document.getElementById('btnConfirmNutriLink').style.display = 'none';
+  foundNutriStudent = null;
+  try {
+    const u = await findUserByEmail(email);
+    if (!u) { document.getElementById('linkNutriNotFound').style.display = 'block'; return; }
+    foundNutriStudent = u;
+    document.getElementById('linkNutriInfo').textContent = u.name + ' (' + u.email + ')';
+    document.getElementById('linkNutriMeta').textContent = (u.city||'') + ' · ' + (u.goal||'') + ' · ' + (u.level||'');
+    document.getElementById('linkNutriResult').style.display = 'block';
+    document.getElementById('btnConfirmNutriLink').style.display = 'block';
+  } catch(e) { toast('Erro: ' + e.message); }
+}
+
+window.confirmLinkNutriStudent = async function() {
+  if (!foundNutriStudent) return;
+  try {
+    await linkStudentToNutri(foundNutriStudent.uid, CU.uid, CU.name);
+    closeModal('linkNutriModal');
+    document.getElementById('linkNutriEmail').value = '';
+    document.getElementById('linkNutriResult').style.display = 'none';
+    document.getElementById('btnConfirmNutriLink').style.display = 'none';
+    foundNutriStudent = null;
+    toast('✅ Paciente vinculado com sucesso!');
+    loadStudents();
+  } catch(e) { toast('Erro: ' + e.message); }
+}
+
+window.confirmUnlinkNutri = async function(uid, name) {
+  if (!confirm('Desvincular ' + name + '?')) return;
+  try {
+    await unlinkStudentFromNutri(uid);
+    toast('✅ Paciente desvinculado');
+    loadStudents();
+  } catch(e) { toast('Erro'); }
+}
+
+window.submitNutriMeasure = async function() {
+  const uid = document.getElementById('nutriMeasureTargetUid').value;
+  const name = document.getElementById('nutriMeasuresName').textContent.replace('👤 ','');
+  const data = {
+    date:    document.getElementById('nAssessDate').value,
+    weight:  document.getElementById('nAssessWeight').value,
+    height:  document.getElementById('nAssessHeight').value,
+    bodyFat: document.getElementById('nAssessFat').value,
+    muscle:  document.getElementById('nAssessMuscle').value,
+    waist:   document.getElementById('nAssessWaist').value,
+    hip:     document.getElementById('nAssessHip').value,
+    arm:     document.getElementById('nAssessArm').value,
+    thigh:   document.getElementById('nAssessThigh').value,
+    calf:    document.getElementById('nAssessCalf').value,
+    notes:   document.getElementById('nAssessNotes').value,
+  };
+  if (!data.date) { toast('Informe a data'); return; }
+  try {
+    await addAssessment(data, uid, name);
+    toast('✅ Avaliação salva!');
+    document.getElementById('nutriAddMeasureForm').style.display = 'none';
+    openNutriMeasures(uid, name); // recarrega lista
+  } catch(e) { toast('Erro: ' + e.message); }
+}
+
+window.openNutriMeasures = async function(uid, name) {
+  document.getElementById('nutriMeasuresName').textContent = '👤 ' + name;
+  document.getElementById('nutriMeasureTargetUid').value = uid;
+  document.getElementById('nutriAddMeasureForm').style.display = 'none';
+  const c = document.getElementById('nutriMeasuresList');
+  c.innerHTML = '<div class="loading"><div class="loading-spin"></div></div>';
+  openModal('nutriMeasuresModal');
+  try {
+    const list = await getAssessments(uid);
+    if (!list.length) {
+      c.innerHTML = '<div class="empty-state"><span class="ei">📏</span><h3>SEM MEDIDAS</h3><p>Nenhuma avaliação registrada para este paciente.</p></div>';
+      return;
+    }
+    c.innerHTML = list.map(a => {
+      const fields = [
+        a.weight  ? '⚖️ Peso: '        + a.weight  + ' kg'  : '',
+        a.height  ? '📐 Altura: '       + a.height  + ' cm'  : '',
+        a.bodyFat ? '🔥 % Gordura: '    + a.bodyFat + '%'    : '',
+        a.muscle  ? '💪 % Músculo: '    + a.muscle  + '%'    : '',
+        a.waist   ? '📏 Cintura: '      + a.waist   + ' cm'  : '',
+        a.hip     ? '📏 Quadril: '      + a.hip     + ' cm'  : '',
+        a.arm     ? '📏 Braço: '        + a.arm     + ' cm'  : '',
+        a.thigh   ? '📏 Coxa: '         + a.thigh   + ' cm'  : '',
+        a.notes   ? '📝 '               + a.notes            : '',
+      ].filter(Boolean);
+      return '<div style="margin:6px 12px;padding:12px;background:rgba(255,255,255,.04);border-left:2px solid #4caf50;border-radius:8px;">' +
+        '<div style="font-family:var(--fh);font-size:11px;color:var(--yellow);margin-bottom:6px;letter-spacing:1px;">📅 ' + (a.date||'—') + '</div>' +
+        fields.map(f => '<div style="font-size:13px;color:var(--light);margin:3px 0;">' + f + '</div>').join('') +
+        '</div>';
+    }).join('');
+  } catch(e) { c.innerHTML = '<div style="padding:20px;color:var(--red);">' + e.message + '</div>'; }
 }
 
 // ── Link student by email ──
@@ -1726,7 +1960,7 @@ async function checkUnreadMessages() {
 }
 
 async function loadMessages() {
-  if (isProf()) document.getElementById('btnNewMsg').style.display = 'flex';
+  if (isProfOrNutri()) document.getElementById('btnNewMsg').style.display = 'flex';
   setMsgTab(curMsgTab, document.getElementById(curMsgTab === 'inbox' ? 'chipInbox' : 'chipSent'));
 }
 
@@ -1850,7 +2084,7 @@ window.submitMsgIndividual = async function() {
 // ── Open new msg for personal composing ──
 window.openNewMsgModal = async function() {
   // if has students, ask: individual or all
-  if (!myStudents.length) { myStudents = await getStudentsByPersonal(CU.uid); }
+  if (!myStudents.length) { myStudents = isNutri() ? await getStudentsByNutri(CU.uid) : await getStudentsByPersonal(CU.uid); }
   if (!myStudents.length) { toast('Vincule alunos primeiro!'); return; }
   // open a quick choice modal — reuse sendMsgAllModal
   openMsgAll();
