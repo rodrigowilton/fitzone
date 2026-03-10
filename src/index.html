@@ -1040,15 +1040,12 @@ function initApp() {
     document.getElementById('nav-feed').style.display      = 'none';
     document.getElementById('nav-students').style.display  = 'flex';
     document.getElementById('btnNewMsg').style.display     = 'flex';
-    // Ocultar Home da nav e mudar label Alunos → Pacientes
-    document.getElementById('nav-home').style.display = 'none';
+    // Nutri vê Home normalmente — ajustar label Alunos → Pacientes
     const nst = document.getElementById('navStudentsTxt');
     if (nst) nst.textContent = 'Pacientes';
     // Ajustar home para nutri
     const hsg = document.getElementById('homeSubGreet');
     if (hsg) hsg.textContent = 'Gerencie seus pacientes';
-    document.getElementById('homeWorkoutPreview').closest('.sec-row')
-      && (document.getElementById('homeWorkoutPreview').previousElementSibling.style.display = 'none');
     document.getElementById('homeAlunoBlocos').style.display = 'none';
     document.getElementById('homeProfBlocos').style.display = 'block';
     document.getElementById('homeStudentsTitle').textContent = 'MEUS PACIENTES';
@@ -1061,8 +1058,8 @@ function initApp() {
     // Ocultar histórico de avaliações
     const ah = document.getElementById('assessHistory');
     if (ah) ah.style.display = 'none';
-    // Nutri começa direto na aba Pacientes
-    setTimeout(() => switchTab('students'), 50);
+    // Nutri começa na Home
+    switchTab('home');
   }
   if (isProf()) {
     document.getElementById('btnAddWorkout').style.display = 'flex';
