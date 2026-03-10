@@ -340,19 +340,31 @@
         </div>
       </div>
 
-      <div class="sec-row" style="margin-top:8px;">
-        <span class="sec-ttl">MEUS TREINOS</span>
-        <button class="btn-sm" onclick="switchTab('workouts')">VER TODOS</button>
+      <!-- BLOCO ALUNO: treinos + checkin -->
+      <div id="homeAlunoBlocos">
+        <div class="sec-row" style="margin-top:8px;">
+          <span class="sec-ttl">MEUS TREINOS</span>
+          <button class="btn-sm" onclick="switchTab('workouts')">VER TODOS</button>
+        </div>
+        <div id="homeWorkoutPreview"></div>
+        <div style="padding:6px 12px 0;">
+          <button class="btn-primary" style="font-size:13px;padding:12px;" onclick="doCheckIn()">
+            ✅ REGISTRAR PRESENÇA DE HOJE
+          </button>
+        </div>
       </div>
-      <div id="homeWorkoutPreview"></div>
 
-      <div style="padding:6px 12px 0;">
-        <button class="btn-primary" style="font-size:13px;padding:12px;" onclick="doCheckIn()">
-          ✅ REGISTRAR PRESENÇA DE HOJE
-        </button>
+      <!-- BLOCO PROF/NUTRI: lista de alunos/pacientes na home -->
+      <div id="homeProfBlocos" style="display:none;">
+        <div class="sec-row" style="margin-top:8px;">
+          <span class="sec-ttl" id="homeStudentsTitle">MEUS ALUNOS</span>
+          <span style="font-family:var(--fh);font-size:11px;font-weight:700;color:var(--yellow);cursor:pointer;" onclick="switchTab('students')" id="homeStudentsLink">VER TODOS →</span>
+        </div>
+        <div id="homeStudentsPreview" style="padding:0 12px;"></div>
       </div>
 
-      <div class="sec-row" style="margin-top:12px;">
+      <!-- COMUNICADOS: aparecem para todos -->
+      <div class="sec-row" style="margin-top:12px;" id="homeFeedRow">
         <span class="sec-ttl">COMUNICADOS</span>
         <span style="font-family:var(--fh);font-size:11px;font-weight:700;color:var(--yellow);cursor:pointer;" onclick="switchTab('feed')">VER TODOS →</span>
       </div>
@@ -1037,14 +1049,10 @@ function initApp() {
     if (hsg) hsg.textContent = 'Gerencie seus pacientes';
     document.getElementById('homeWorkoutPreview').closest('.sec-row')
       && (document.getElementById('homeWorkoutPreview').previousElementSibling.style.display = 'none');
-    document.getElementById('homeWorkoutPreview').style.display = 'none';
-    const checkinBtn = document.querySelector('#tab-home .btn-primary');
-    if (checkinBtn) checkinBtn.closest('div').style.display = 'none';
-    const feedRow = document.getElementById('homeAnnouncePreview');
-    if (feedRow) {
-      feedRow.style.display = 'none';
-      feedRow.previousElementSibling && (feedRow.previousElementSibling.style.display = 'none');
-    }
+    document.getElementById('homeAlunoBlocos').style.display = 'none';
+    document.getElementById('homeProfBlocos').style.display = 'block';
+    document.getElementById('homeStudentsTitle').textContent = 'MEUS PACIENTES';
+    document.getElementById('homeStudentsLink').onclick = function(){ switchTab('students'); };
     // Ocultar avaliação e dieta do perfil da própria nutri
     const miA = document.getElementById('menuItemAssessment');
     const miD = document.getElementById('menuItemDiet');
@@ -1061,10 +1069,14 @@ function initApp() {
     document.getElementById('btnAddAnnounce').style.display = 'flex';
     document.getElementById('nav-students').style.display = 'flex';
     document.getElementById('btnNewMsg').style.display = 'flex';
+    document.getElementById('homeAlunoBlocos').style.display = 'none';
+    document.getElementById('homeProfBlocos').style.display = 'block';
+    document.getElementById('homeStudentsTitle').textContent = 'MEUS ALUNOS';
   }
   loadHomeStats();
   loadHomeWorkouts();
   loadHomeAnnouncements();
+  loadHomeProfStudents();
   renderProfile();
   checkUnreadMessages();
 }
@@ -1083,6 +1095,7 @@ function switchTab(tab) {
   if (tab === 'feed' && !allAnnouncements.length) loadFeed();
   if (tab === 'profile') renderProfileTab();
   if (tab === 'students') loadStudents();
+  if (tab === 'home' && isProfOrNutri()) loadHomeProfStudents();
   if (tab === 'messages') loadMessages();
 }
 window.switchTab = switchTab;
@@ -1094,8 +1107,7 @@ async function loadHomeStats() {
     const first = (CU.name || 'ATLETA').split(' ')[0].toUpperCase();
     document.getElementById('welcomeName').textContent = first;
     document.getElementById('homeRoleBadge').textContent = CU.role === 'personal' ? 'PERSONAL' : (CU.role === 'nutri' ? 'NUTRICIONISTA' : 'ALUNO');
-    if (isNutri()) {
-      // Nutri: stat boxes mostram pacientes vinculados
+    if (isProfOrNutri()) {
       document.getElementById('statWorkouts').textContent = '—';
       document.getElementById('statFreq').textContent = '—';
     } else {
@@ -1120,6 +1132,37 @@ async function loadHomeWorkouts() {
     if (!wks.length) { c.innerHTML = '<div style="padding:12px 12px 4px;font-size:13px;color:var(--gray);">Nenhum treino atribuído ainda.</div>'; return; }
     c.innerHTML = wks.slice(0,2).map(w => renderWorkoutCard(w)).join('');
   } catch(e) { c.innerHTML = '<div style="padding:12px;font-size:12px;color:var(--red);">' + e.message + '</div>'; }
+}
+
+async function loadHomeProfStudents() {
+  if (!isProfOrNutri()) return;
+  const c = document.getElementById('homeStudentsPreview');
+  if (!c) return;
+  try {
+    const list = isNutri()
+      ? await getStudentsByNutri(CU.uid)
+      : await getStudentsByPersonal(CU.uid);
+    // Atualizar stat box com total
+    document.getElementById('statWorkouts').textContent = list.length;
+    const statLabel = document.querySelector('.stat-box-label');
+    // Atualizar label da stat box de treinos para alunos/pacientes
+    const statBoxes = document.querySelectorAll('.stat-box');
+    if (statBoxes[0]) statBoxes[0].querySelector('.stat-box-label').textContent = isNutri() ? 'Pacientes' : 'Alunos';
+    if (!list.length) {
+      c.innerHTML = '<div style="font-size:13px;color:var(--gray);padding:8px 0;">Nenhum ' + (isNutri()?'paciente':'aluno') + ' vinculado ainda.<br><span style=\"color:var(--yellow);cursor:pointer;\" onclick=\"switchTab("students")\">Clique em Vincular →</span></div>';
+      return;
+    }
+    c.innerHTML = list.map(s =>
+      '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);">' +
+        '<div style="width:34px;height:34px;border-radius:50%;background:rgba(255,214,0,.15);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:700;font-size:14px;color:var(--yellow);flex-shrink:0;">' + (s.name||'?')[0].toUpperCase() + '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-family:var(--fh);font-size:13px;font-weight:700;color:var(--light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (s.name||'—') + '</div>' +
+          '<div style="font-size:11px;color:var(--gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (s.email||'') + '</div>' +
+        '</div>' +
+        '<div style="font-size:11px;color:var(--gray);flex-shrink:0;">' + (s.goal||'') + '</div>' +
+      '</div>'
+    ).join('');
+  } catch(e) { if(c) c.innerHTML = ''; }
 }
 
 async function loadHomeAnnouncements() {
